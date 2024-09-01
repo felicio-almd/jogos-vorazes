@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define MAX_SIZE 1000
+#define TAMANHO_MAX 1000
 
 /*
     Nome da Estrutura: Labirinto
@@ -18,13 +18,14 @@
             "M" para um bestante (monstro)
         altura: um inteiro que armazena a altura do labirinto
         largura: um inteiro que armazena a largura do labirinto
-    obs: a constante MAX_SIZE (definida como 1000 no arquivo) determina o tamanho maximo do labirinto
+    obs: a constante TAMANHO_MAX (definida como 1000 no arquivo) determina o tamanho maximo do labirinto
 */
 typedef struct labirinto
 {
-    char mapa[MAX_SIZE][MAX_SIZE];
+    char mapa[TAMANHO_MAX][TAMANHO_MAX];
     int altura;
     int largura;
+    Posicao posicaoInicial;
 } Labirinto;
 
 /*
@@ -41,13 +42,16 @@ typedef struct
 } Posicao;
 
 /*
-    Nome da função: lerLabirinto
+    Nome da função: carregarLabirinto
     Parametro:
         labirinto:(Ponteiro para uma estrutura labirinto da entrada)
-    Objetivo: Ler a altura e Largura do labirinto, armazena-los nos campos da estrutura
+        linhas:(inteiro com o tamanho da altura do labirinto)
+        colunas:(inteiro com o tamanho da largura do labirinto)
+
+    Objetivo: Armazenar a altura e Largura do labirinto nos campos da estrutura
               em seguida, ler o mapa do labirinto linha por linha e coloca-lo no campo mapa
 */
-void lerLabirinto(Labirinto *labirinto);
+void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
 
 /*
     Nome da função: existeCaminho
@@ -71,7 +75,7 @@ void imprimirCaminho(Labirinto *labirinto);
 typedef struct no
 {
     int chave;
-    struct no *esq, *dir;
+    struct no *esq, *dir, *cima, *baixo;
 } Tree;
 
 #endif
