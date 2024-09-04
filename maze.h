@@ -3,8 +3,22 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 #define TAMANHO_MAX 1000
+
+/*
+    Nome da Estrutura: Posicao
+    Objetivo: Representa uma posição no labirinto
+    Campos:
+        x: um inteiro que a coordenada x (linha) da posição
+        y: um inteiro que a coordenada y (coluna) da posição
+*/
+typedef struct
+{
+    int x;
+    int y;
+} Posicao;
 
 /*
     Nome da Estrutura: Labirinto
@@ -26,20 +40,15 @@ typedef struct labirinto
     int altura;
     int largura;
     Posicao posicaoInicial;
+    char visitado[TAMANHO_MAX][TAMANHO_MAX];
 } Labirinto;
 
-/*
-    Nome da Estrutura: Posicao
-    Objetivo: Representa uma posição no labirinto
-    Campos:
-        x: um inteiro que a coordenada x (linha) da posição
-        y: um inteiro que a coordenada y (coluna) da posição
-*/
-typedef struct
+typedef struct pilha
 {
-    int x;
-    int y;
-} Posicao;
+    Posicao pilha[TAMANHO_MAX * TAMANHO_MAX];
+    int topo;
+    int tamanho;
+} Pilha;
 
 /*
     Nome da função: carregarLabirinto
@@ -53,6 +62,14 @@ typedef struct
 */
 void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
 
+// FAZER DOCUMENTAÇÃO DESSAS FUNÇÕES SE NECESSARIO
+void carregaLabirintoAleatorio(Labirinto *labirinto);
+void imprimeLabirinto(Labirinto *labirinto);
+
+// int existeSaida(Labirinto *labirinto);
+// int buscaEmProfundidade(Labirinto *labirinto, int x, int y);
+// int dentroDoLabirinto(Labirinto *labirinto, int x, int y);
+
 /*
     Nome da função: existeCaminho
     Parametro:
@@ -61,7 +78,7 @@ void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
     Objetivo: A partir de um algoritmo de busca, verificar se tem o caminho para o tributo
               sair do labirinto. Considera movimentos simultaneos do tributo e dos bestantes
 */
-int existeCaminho(Labirinto *labirinto);
+// int existeCaminho(Labirinto *labirinto, char *caminho, int *tamanhoCaminho);
 
 /*
     Nome da função: imprimirCaminho
@@ -69,13 +86,13 @@ int existeCaminho(Labirinto *labirinto);
         labirinto:(Ponteiro para uma estrutura labirinto da entrada)
     Objetivo: Essa função deve encontrar o caminho de fuga e imprimir esse caminho válido.
 */
-void imprimirCaminho(Labirinto *labirinto);
+// void imprimirCaminho(Labirinto *labirinto);
 
 // Estrutura para a arvore (busca)
-typedef struct no
-{
-    int chave;
-    struct no *esq, *dir, *cima, *baixo;
-} Tree;
+// typedef struct no
+// {
+//     int chave;
+//     struct no *esq, *dir, *cima, *baixo;
+// } Tree;
 
 #endif

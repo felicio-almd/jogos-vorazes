@@ -5,23 +5,25 @@ int main()
     int n, m;
     Labirinto labirinto;
 
-    scanf("%d %d", &n, &m);
+    printf("Digite a largura do labirinto: ");
+    scanf("%d", &m);
+    printf("Digite a altura do labirinto: ");
+    scanf("%d", &n);
     carregarLabirinto(&labirinto, n, m);
+    printf("\n");
+    imprimeLabirinto(&labirinto);
 
     // ver se nao tem que alocar melhor o tamanho
-    char caminho[TAMANHO_MAX * TAMANHO_MAX];
-    int tamanhoCaminho = 0;
 
     // conferir a caminhada, como vai ser feita
-    if (caminhoPossivel(&labirinto, caminho, &tamanhoCaminho))
+    if (existeSaida(&labirinto))
     {
-        if (simularMovimento())
-            imprimirSolucao(tamanhoCaminho, caminho);
-        else
-            imprimirSolucao(0, caminho);
+        printf("Há uma saída no labirinto.\n");
     }
     else
-        imprimirSolucao(0, caminho);
+    {
+        printf("Não há saída no labirinto.\n");
+    }
 
     return 0;
 }
