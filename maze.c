@@ -1,55 +1,5 @@
 #include "maze.h"
 
-// Iniciando o labirinto
-// FALTA FAZER
-// verificar sem tem A no labirinto
-// verificar sem tem 2 A no labirinto
-// verificar se o tamanho eh ideal  1 ≤ n, m ≤ 1000.
-// verificar se nao tem caraceteres errado
-/*void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas)
-{
-    if (linhas < 1 || linhas > TAMANHO_MAX || colunas < 1 || colunas > TAMANHO_MAX)
-    {
-        printf("Erro: Dimensões do labirinto são inválidas.\n");
-        return;
-    }
-    // armazena a altura e largura como quantidade de linhas e colunas
-    labirinto->altura = linhas;
-    labirinto->largura = colunas;
-    int i, j;
-    int contadorA = 0;
-
-    // le cada caractere
-    for (i = 0; i < labirinto->altura; i++)
-    {
-        for (j = 0; j < labirinto->largura; j++)
-        {
-            scanf(" %c", &labirinto->mapa[i][j]);
-            if (labirinto->mapa[i][j] == 'A')
-            {
-                labirinto->posicaoInicial.x = i;
-                labirinto->posicaoInicial.y = j;
-                contadorA++;
-
-                if (labirinto->mapa[i][j] != 'A' && labirinto->mapa[i][j] != '.' && labirinto->mapa[i][j] != '#' && labirinto->mapa[i][j] != 'M')
-                {
-                    printf("Erro: Caractere inválido '%c' encontrado no labirinto.\n", labirinto->mapa[i][j]);
-                    return;
-                }
-            }
-        }
-        if (contadorA == 0)
-        {
-            printf("Erro: Nenhum ponto inicial 'A' encontrado no labirinto.\n");
-        }
-        else if (contadorA > 1)
-        {
-            printf("Erro: Mais de um ponto inicial 'A' encontrado no labirinto.\n");
-        }
-    }
-}
-*/
-
 // Função para preencher o labirinto com caracteres aleatórios
 void carregaLabirintoAleatorio(Labirinto *labirinto)
 {
@@ -96,14 +46,11 @@ void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas)
         return;
     }
 
-    // Armazena a altura e largura
     labirinto->altura = linhas;
     labirinto->largura = colunas;
 
-    // Preenche o labirinto com caracteres aleatórios
     carregaLabirintoAleatorio(labirinto);
 
-    // Valida os caracteres no labirinto
     int i, j;
     for (i = 0; i < labirinto->altura; i++)
     {
@@ -131,115 +78,65 @@ void imprimeLabirinto(Labirinto *labirinto)
     }
 }
 
-// Inicializa a pilha
-void inicializaPilha(Pilha *p)
-{
-    p->topo = -1;
-}
+// Direções para cima, baixo, esquerda, direita
+int dx[4] = {-1, 1, 0, 0};
+int dy[4] = {0, 0, -1, 1};
+char dir[4] = {'U', 'D', 'L', 'R'};
 
-// Verifica se a pilha está vazia
-int pilhaVazia(Pilha *p)
+void inicializarPilha(Pilha *pilha, int tamanho_maximo)
 {
-    return p->topo == -1;
-}
-
-// Adiciona um item à pilha
-void empilha(Pilha *p, Posicao pos)
-{
-    if (p->topo < TAMANHO_MAX * TAMANHO_MAX - 1)
+    pilha->pilha = (Posicao *)malloc(tamanho_maximo * sizeof(Posicao));
+    if (pilha->pilha == NULL)
     {
-        p->pilha[++p->topo] = pos;
+        printf("Erro ao alocar memória para a pilha.\n");
+        exit(1);
+    }
+    pilha->topo = -1;
+    pilha->tamanho_maximo = tamanho_maximo;
+}
+
+int pilhaVazia(Pilha *pilha)
+{
+    return pilha->topo == -1;
+}
+
+void empilhar(Pilha *pilha, Posicao pos)
+{
+    if (pilha->topo < pilha->tamanho_maximo - 1)
+    {
+        pilha->pilha[++(pilha->topo)] = pos;
+    }
+    else
+    {
+        printf("Pilha cheia. Não é possível empilhar.\n");
     }
 }
 
-// Remove e retorna o item do topo da pilha
-Posicao desempilha(Pilha *p)
+Posicao desempilhar(Pilha *pilha)
 {
-    if (!pilhaVazia(p))
+    if (pilhaVazia(pilha))
     {
-        return p->pilha[p->topo--];
+        fprintf(stderr, "Pilha vazia. Não é possível desempilhar.\n");
+        exit(1); // Opcionalmente, pode-se usar um valor de retorno especial ou definir um comportamento alternativo
     }
-    // Retorna uma posição inválida se a pilha estiver vazia
-    Posicao pos = {-1, -1};
-    return pos;
+    return pilha->pilha[(pilha->topo)--];
 }
 
-int movimento(Labirinto *labirinto)
+void imprimirPilha(Pilha *pilha)
 {
+    for (int i = 0; i <= pilha->topo; i++)
+    {
+        printf("(%d, %d)", pilha->pilha[i].x, pilha->pilha[i].y);
+        if (i < pilha->topo)
+        {
+            printf(" -> ");
+        }
+    }
+    printf("\n");
+    printf("Tamanho da pilha: %d\n", pilha->topo + 1);
 }
 
-// Função da busca do caminho (busca em profundidade)
-// ou tem caminho
-// void existeCaminho(Labirinto *labirinto, char *caminho, int *tamanhoCaminho)
-// {
-//     // Implemente a lógica para verificar se o caminho é possível
-// }
-
-// int dentroDoLabirinto(Labirinto *labirinto, int x, int y)
-// {
-//     return (x >= 0 && x < labirinto->altura && y >= 0 && y < labirinto->largura);
-// }
-
-// // Função DFS recursiva
-// int buscaEmProfundidade(Labirinto *labirinto, int x, int y)
-// {
-//     if (!dentroDoLabirinto(labirinto, x, y) || labirinto->visitado[x][y] || labirinto->mapa[x][y] == '#')
-//     {
-//         return 0;
-//     }
-
-//     labirinto->visitado[x][y] = 1;
-
-//     // Se encontramos uma saída (ponto final), retorna verdadeiro
-//     if (labirinto->mapa[x][y] == 'A')
-//     {
-//         return 1;
-//     }
-
-//     // Explora as 4 direções (cima, baixo, esquerda, direita)
-//     int dx[] = {-1, 1, 0, 0};
-//     int dy[] = {0, 0, -1, 1};
-
-//     for (int i = 0; i < 4; i++)
-//     {
-//         int novoX = x + dx[i];
-//         int novoY = y + dy[i];
-
-//         if (buscaEmProfundidade(labirinto, novoX, novoY))
-//         {
-//             return 1;
-//         }
-//     }
-
-//     // Retorna falso se não encontrou a saída
-//     return 0;
-// }
-
-// // Função para iniciar a busca e verificar se há uma saída
-// int existeSaida(Labirinto *labirinto)
-// {
-//     // Inicializa a matriz de visitado
-//     for (int i = 0; i < labirinto->altura; i++)
-//     {
-//         for (int j = 0; j < labirinto->largura; j++)
-//         {
-//             labirinto->visitado[i][j] = 0;
-//         }
-//     }
-
-//     // Inicia a busca a partir da posição inicial 'A'
-//     return buscaEmProfundidade(labirinto, labirinto->posicaoInicial.x, labirinto->posicaoInicial.y);
-// }
-
-// Função que imprime a saída desejada
-// void imprimirSolucao(int tamanhoCaminho, char *caminho)
-// {
-//     if (tamanhoCaminho > 0)
-//     {
-//         printf("YES\n%d\n%s\n", tamanhoCaminho, caminho);
-//     }
-//     else
-//     {
-//         printf("NO\n");
-//     }
-// }
+void desalocarPilha(Pilha *pilha)
+{
+    free(pilha->pilha);
+}

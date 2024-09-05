@@ -16,14 +16,14 @@ int main()
     // ver se nao tem que alocar melhor o tamanho
 
     // conferir a caminhada, como vai ser feita
-    if (existeSaida(&labirinto))
-    {
-        printf("Há uma saída no labirinto.\n");
-    }
-    else
-    {
-        printf("Não há saída no labirinto.\n");
-    }
+    // if (existeSaida(&labirinto))
+    // {
+    //     printf("Tem uma saida no labirinto.\n");
+    // }
+    // else
+    // {
+    //     printf("Nao tem saida no labirinto.\n");
+    // }
 
     return 0;
 }
