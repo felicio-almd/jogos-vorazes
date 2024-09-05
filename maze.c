@@ -78,10 +78,7 @@ void imprimeLabirinto(Labirinto *labirinto)
     }
 }
 
-// Direções para cima, baixo, esquerda, direita
-int dx[4] = {-1, 1, 0, 0};
-int dy[4] = {0, 0, -1, 1};
-char dir[4] = {'U', 'D', 'L', 'R'};
+
 
 void inicializarPilha(Pilha *pilha, int tamanho_maximo)
 {
@@ -122,14 +119,11 @@ Posicao desempilhar(Pilha *pilha)
     return pilha->pilha[(pilha->topo)--];
 }
 
-void imprimirPilha(Pilha *pilha)
-{
-    for (int i = 0; i <= pilha->topo; i++)
-    {
+void imprimirPilha(Pilha *pilha) {
+    for (int i = 0; i <= pilha->topo; i++) {
         printf("(%d, %d)", pilha->pilha[i].x, pilha->pilha[i].y);
-        if (i < pilha->topo)
-        {
-            printf(" -> ");
+        if (i < pilha->topo) {
+            printf(" <- ");
         }
     }
     printf("\n");
@@ -139,4 +133,47 @@ void imprimirPilha(Pilha *pilha)
 void desalocarPilha(Pilha *pilha)
 {
     free(pilha->pilha);
+}
+
+// Direções para cima, baixo, esquerda, direita
+int dx[4] = {-1, 1, 0, 0};
+int dy[4] = {0, 0, -1, 1};
+
+
+// int existeSaida(Labirinto *labirinto, char direcao){
+//     printf("\nx = %d \ny = %d\n\n", labirinto->posicaoInicial.x, labirinto->posicaoInicial.y);
+
+    
+// }
+
+int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho) {
+    // Se a posição atual estiver na borda do labirinto, encontramos a saída
+    if (posicaoAtual.x == 0 || posicaoAtual.x == labirinto->altura - 1 ||
+        posicaoAtual.y == 0 || posicaoAtual.y == labirinto->largura - 1) {
+        empilhar(caminho, posicaoAtual);
+        return 1;
+    }
+
+    // Marca a posição atual como visitada
+    labirinto->mapa[posicaoAtual.x][posicaoAtual.y] = '#';
+
+    // Testa todas as quatro direções (cima, baixo, esquerda, direita)
+    for (int i = 0; i < 4; i++) {
+        Posicao novaPosicao = {posicaoAtual.x + dx[i], posicaoAtual.y + dy[i]};
+
+        // Verifica se a nova posição está dentro dos limites e é um caminho válido
+        if (novaPosicao.x >= 0 && novaPosicao.x < labirinto->altura &&
+            novaPosicao.y >= 0 && novaPosicao.y < labirinto->largura &&
+            labirinto->mapa[novaPosicao.x][novaPosicao.y] == '.') {
+            
+            if (encontrarCaminho(labirinto, novaPosicao, caminho)) {
+                empilhar(caminho, posicaoAtual);
+                return 1;
+            }
+        }
+    }
+
+    // Se não encontrou um caminho, desmarca a posição atual como visitada
+    labirinto->mapa[posicaoAtual.x][posicaoAtual.y] = '.';
+    return 0;
 }
