@@ -1,29 +1,21 @@
 #include "maze.h"
 
-int main()
-{
-    int n, m;
+int main() {
     Labirinto labirinto;
+    Pilha caminho;
+    inicializarPilha(&caminho, 1000); // Ajuste o tamanho máximo conforme necessário
 
-    printf("Digite a largura do labirinto: ");
-    scanf("%d", &m);
-    printf("Digite a altura do labirinto: ");
-    scanf("%d", &n);
-    carregarLabirinto(&labirinto, n, m);
-    printf("\n");
+    carregarLabirinto(&labirinto, 5, 5); // Ajuste as dimensões conforme necessário
     imprimeLabirinto(&labirinto);
 
-    // ver se nao tem que alocar melhor o tamanho
+    printf("Buscando caminho...\n");
+    if (encontrarCaminho(&labirinto, labirinto.posicaoInicial, &caminho)) {
+        printf("Caminho encontrado:\n");
+        imprimirPilha(&caminho);
+    } else {
+        printf("Nenhum caminho encontrado.\n");
+    }
 
-    // conferir a caminhada, como vai ser feita
-    // if (existeSaida(&labirinto))
-    // {
-    //     printf("Tem uma saida no labirinto.\n");
-    // }
-    // else
-    // {
-    //     printf("Nao tem saida no labirinto.\n");
-    // }
-
+    desalocarPilha(&caminho);
     return 0;
 }

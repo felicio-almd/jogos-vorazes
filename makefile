@@ -22,3 +22,4 @@ main.o: main.c maze.h
 # Limpa os arquivos compilados
 clean:
 	del *.o $(TARGET).exe
+

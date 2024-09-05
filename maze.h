@@ -37,5 +37,7 @@ void empilhar(Pilha *pilha, Posicao pos);
 void imprimirPilha(Pilha *pilha);
 void desalocarPilha(Pilha *pilha);
 Posicao desempilhar(Pilha *pilha);
+// int existeSaida(Labirinto *labirinto, char direcao);
+int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho);
 
 #endif
