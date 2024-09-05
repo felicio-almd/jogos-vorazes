@@ -1,6 +1,7 @@
 #include "maze.h"
 
-int main() {
+int main()
+{
     Labirinto labirinto;
     Pilha caminho;
     inicializarPilha(&caminho, 1000); // Ajuste o tamanho máximo conforme necessário
@@ -9,10 +10,13 @@ int main() {
     imprimeLabirinto(&labirinto);
 
     printf("Buscando caminho...\n");
-    if (encontrarCaminho(&labirinto, labirinto.posicaoInicial, &caminho)) {
+    if (encontrarCaminho(&labirinto, labirinto.posicaoInicial, &caminho))
+    {
         printf("Caminho encontrado:\n");
         imprimirPilha(&caminho);
-    } else {
+    }
+    else
+    {
         printf("Nenhum caminho encontrado.\n");
     }
 
