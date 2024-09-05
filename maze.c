@@ -68,6 +68,7 @@ void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas)
 void imprimeLabirinto(Labirinto *labirinto)
 {
     int i, j;
+    printf("\n");
     for (i = 0; i < labirinto->altura; i++)
     {
         for (j = 0; j < labirinto->largura; j++)
@@ -76,14 +77,14 @@ void imprimeLabirinto(Labirinto *labirinto)
         }
         printf("\n"); // Adiciona uma nova linha após cada linha do labirinto
     }
+    printf("\n");
 }
-
-
 
 void inicializarPilha(Pilha *pilha, int tamanho_maximo)
 {
     pilha->pilha = (Posicao *)malloc(tamanho_maximo * sizeof(Posicao));
-    if (pilha->pilha == NULL)
+    pilha->movimentos = (char *)malloc(tamanho_maximo * sizeof(char)); // Aloca espaço para os movimentos
+    if (pilha->pilha == NULL || pilha->movimentos == NULL)
     {
         printf("Erro ao alocar memória para a pilha.\n");
         exit(1);
@@ -97,11 +98,12 @@ int pilhaVazia(Pilha *pilha)
     return pilha->topo == -1;
 }
 
-void empilhar(Pilha *pilha, Posicao pos)
+void empilhar(Pilha *pilha, Posicao pos, char movimento)
 {
     if (pilha->topo < pilha->tamanho_maximo - 1)
     {
         pilha->pilha[++(pilha->topo)] = pos;
+        pilha->movimentos[pilha->topo] = movimento; // Armazena o movimento
     }
     else
     {
@@ -114,43 +116,45 @@ Posicao desempilhar(Pilha *pilha)
     if (pilhaVazia(pilha))
     {
         fprintf(stderr, "Pilha vazia. Não é possível desempilhar.\n");
-        exit(1); // Opcionalmente, pode-se usar um valor de retorno especial ou definir um comportamento alternativo
+        exit(1);
     }
     return pilha->pilha[(pilha->topo)--];
 }
 
-void imprimirPilha(Pilha *pilha) {
-    for (int i = 0; i <= pilha->topo; i++) {
-        printf("(%d, %d)", pilha->pilha[i].x, pilha->pilha[i].y);
-        if (i < pilha->topo) {
-            printf(" <- ");
-        }
+void imprimirPilha(Pilha *pilha)
+{
+    printf("Posição inicial: (Linha: %d, Coluna: %d)\n", pilha->pilha[0].x + 1, pilha->pilha[0].y + 1);
+    for (int i = pilha->topo; i >= 0; i--)
+    {
+        printf("(%d,%d) -> ", pilha->pilha[i].x + 1, pilha->pilha[i].y + 1);
     }
     printf("\n");
-    printf("Tamanho da pilha: %d\n", pilha->topo + 1);
+    for (int i = pilha->topo; i >= 0; i--)
+    {
+        printf("%c", pilha->movimentos[i]);
+    }
+    printf("\nSaiu\n");
+    printf("Tamanho da pilha: %d\n", pilha->topo);
 }
 
 void desalocarPilha(Pilha *pilha)
 {
     free(pilha->pilha);
+    free(pilha->movimentos); // Libera a memória dos movimentos
 }
 
 // Direções para cima, baixo, esquerda, direita
 int dx[4] = {-1, 1, 0, 0};
 int dy[4] = {0, 0, -1, 1};
+char movimentos[4] = {'U', 'D', 'L', 'R'}; // Cima, Baixo, Esquerda, Direita
 
-
-// int existeSaida(Labirinto *labirinto, char direcao){
-//     printf("\nx = %d \ny = %d\n\n", labirinto->posicaoInicial.x, labirinto->posicaoInicial.y);
-
-    
-// }
-
-int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho) {
+int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho)
+{
     // Se a posição atual estiver na borda do labirinto, encontramos a saída
     if (posicaoAtual.x == 0 || posicaoAtual.x == labirinto->altura - 1 ||
-        posicaoAtual.y == 0 || posicaoAtual.y == labirinto->largura - 1) {
-        empilhar(caminho, posicaoAtual);
+        posicaoAtual.y == 0 || posicaoAtual.y == labirinto->largura - 1)
+    {
+        empilhar(caminho, posicaoAtual, '\0');
         return 1;
     }
 
@@ -158,16 +162,19 @@ int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho)
     labirinto->mapa[posicaoAtual.x][posicaoAtual.y] = '#';
 
     // Testa todas as quatro direções (cima, baixo, esquerda, direita)
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         Posicao novaPosicao = {posicaoAtual.x + dx[i], posicaoAtual.y + dy[i]};
 
         // Verifica se a nova posição está dentro dos limites e é um caminho válido
         if (novaPosicao.x >= 0 && novaPosicao.x < labirinto->altura &&
             novaPosicao.y >= 0 && novaPosicao.y < labirinto->largura &&
-            labirinto->mapa[novaPosicao.x][novaPosicao.y] == '.') {
-            
-            if (encontrarCaminho(labirinto, novaPosicao, caminho)) {
-                empilhar(caminho, posicaoAtual);
+            labirinto->mapa[novaPosicao.x][novaPosicao.y] == '.')
+        {
+
+            if (encontrarCaminho(labirinto, novaPosicao, caminho))
+            {
+                empilhar(caminho, posicaoAtual, movimentos[i]); // Armazena o movimento correspondente
                 return 1;
             }
         }

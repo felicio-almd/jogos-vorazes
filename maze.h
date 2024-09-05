@@ -25,6 +25,7 @@ typedef struct
     Posicao *pilha;
     int topo;
     int tamanho_maximo;
+    char *movimentos;
 } Pilha;
 
 void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
@@ -33,7 +34,7 @@ void imprimeLabirinto(Labirinto *labirinto);
 
 void inicializarPilha(Pilha *pilha, int tamanho_maximo);
 int pilhaVazia(Pilha *pilha);
-void empilhar(Pilha *pilha, Posicao pos);
+void empilhar(Pilha *pilha, Posicao pos, char movimento);
 void imprimirPilha(Pilha *pilha);
 void desalocarPilha(Pilha *pilha);
 Posicao desempilhar(Pilha *pilha);
