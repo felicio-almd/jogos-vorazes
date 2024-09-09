@@ -148,12 +148,39 @@ int dx[4] = {-1, 1, 0, 0};
 int dy[4] = {0, 0, -1, 1};
 char movimentos[4] = {'U', 'D', 'L', 'R'}; // Cima, Baixo, Esquerda, Direita
 
-int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho)
-{
-    // Se a posição atual estiver na borda do labirinto, encontramos a saída
+
+void inicializarMonstro(Labirinto *labirinto, Monstro *monstro) {
+    do {
+        monstro->posicao.x = rand() % labirinto->altura;
+        monstro->posicao.y = rand() % labirinto->largura;
+    } while (labirinto->mapa[monstro->posicao.x][monstro->posicao.y] != '.');
+    
+    labirinto->mapa[monstro->posicao.x][monstro->posicao.y] = 'M';
+}
+
+void moverMonstro(Labirinto *labirinto, Monstro *monstro) {
+    int direcao = rand() % 4;
+    Posicao novaPosicao = {
+        monstro->posicao.x + dx[direcao],
+        monstro->posicao.y + dy[direcao]
+    };
+
+    if (novaPosicao.x >= 0 && novaPosicao.x < labirinto->altura &&
+        novaPosicao.y >= 0 && novaPosicao.y < labirinto->largura &&
+        labirinto->mapa[novaPosicao.x][novaPosicao.y] == '.') {
+        
+        labirinto->mapa[monstro->posicao.x][monstro->posicao.y] = '.';
+        monstro->posicao = novaPosicao;
+        labirinto->mapa[monstro->posicao.x][monstro->posicao.y] = 'M';
+    }
+}
+
+
+
+int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho, Monstro *monstro) {
+    // Verifica se chegou à borda (condição de saída)
     if (posicaoAtual.x == 0 || posicaoAtual.x == labirinto->altura - 1 ||
-        posicaoAtual.y == 0 || posicaoAtual.y == labirinto->largura - 1)
-    {
+        posicaoAtual.y == 0 || posicaoAtual.y == labirinto->largura - 1) {
         empilhar(caminho, posicaoAtual, '\0');
         return 1;
     }
@@ -161,26 +188,31 @@ int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho)
     // Marca a posição atual como visitada
     labirinto->mapa[posicaoAtual.x][posicaoAtual.y] = '#';
 
-    // Testa todas as quatro direções (cima, baixo, esquerda, direita)
-    for (int i = 0; i < 4; i++)
-    {
+    // Move o monstro
+    moverMonstro(labirinto, monstro);
+
+    // Verifica se o monstro pegou o jogador
+    if (posicaoAtual.x == monstro->posicao.x && posicaoAtual.y == monstro->posicao.y) {
+        printf("O monstro pegou o jogador!\n");
+        return 0;
+    }
+
+    // Testa todas as quatro direções
+    for (int i = 0; i < 4; i++) {
         Posicao novaPosicao = {posicaoAtual.x + dx[i], posicaoAtual.y + dy[i]};
 
-        // Verifica se a nova posição está dentro dos limites e é um caminho válido
         if (novaPosicao.x >= 0 && novaPosicao.x < labirinto->altura &&
             novaPosicao.y >= 0 && novaPosicao.y < labirinto->largura &&
-            labirinto->mapa[novaPosicao.x][novaPosicao.y] == '.')
-        {
+            labirinto->mapa[novaPosicao.x][novaPosicao.y] == '.') {
 
-            if (encontrarCaminho(labirinto, novaPosicao, caminho))
-            {
-                empilhar(caminho, posicaoAtual, movimentos[i]); // Armazena o movimento correspondente
+            if (encontrarCaminho(labirinto, novaPosicao, caminho, monstro)) {
+                empilhar(caminho, posicaoAtual, movimentos[i]);
                 return 1;
             }
         }
     }
 
-    // Se não encontrou um caminho, desmarca a posição atual como visitada
+    // Se não encontrou um caminho, desmarca a posição atual
     labirinto->mapa[posicaoAtual.x][posicaoAtual.y] = '.';
     return 0;
 }

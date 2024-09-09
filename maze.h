@@ -28,6 +28,11 @@ typedef struct
     char *movimentos;
 } Pilha;
 
+typedef struct {
+    Posicao posicao;
+} Monstro;
+
+
 void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
 void carregaLabirintoAleatorio(Labirinto *labirinto);
 void imprimeLabirinto(Labirinto *labirinto);
@@ -39,6 +44,10 @@ void imprimirPilha(Pilha *pilha);
 void desalocarPilha(Pilha *pilha);
 Posicao desempilhar(Pilha *pilha);
 // int existeSaida(Labirinto *labirinto, char direcao);
-int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho);
+int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho, Monstro *monstro);
+
+
+void inicializarMonstro(Labirinto *labirinto, Monstro *monstro);
+void moverMonstro(Labirinto *labirinto, Monstro *monstro);
 
 #endif
