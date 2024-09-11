@@ -11,7 +11,7 @@ int main()
     // printf("Labirinto gerado:\n");
     imprimeLabirinto(&labirinto);
 
-    // printf("Buscando o menor caminho...\n");
+    printf("Buscando o menor caminho...\n");
     resolverLabirinto(&labirinto);
 
     return 0;

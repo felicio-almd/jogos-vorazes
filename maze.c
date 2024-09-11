@@ -81,6 +81,17 @@ void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas)
         printf("Erro: Mais de um ponto inicial 'A' encontrado no labirinto.\n");
         exit(1);
     }
+    labirinto->numMonstros = 0;
+    for (i = 0; i < labirinto->altura; i++)
+    {
+        for (j = 0; j < labirinto->largura; j++)
+        {
+            if (labirinto->mapa[i][j] == 'M')
+            {
+                labirinto->numMonstros++;
+            }
+        }
+    }
 }
 
 void imprimeLabirinto(Labirinto *labirinto)
@@ -100,7 +111,7 @@ void imprimeLabirinto(Labirinto *labirinto)
 
 void inicializarPilha(Pilha *pilha, int tamanho_maximo)
 {
-    // pilha->pilha = (Posicao *)malloc(tamanho_maximo * sizeof(Posicao));
+    pilha->pilha = (Posicao *)malloc(tamanho_maximo * sizeof(Posicao));
     pilha->movimentos = (char *)malloc(tamanho_maximo * sizeof(char));
     if (pilha->pilha == NULL || pilha->movimentos == NULL)
     {
@@ -266,7 +277,7 @@ int encontrarMenorCaminho(Labirinto *labirinto, Posicao posicaoInicial, Pilha *c
             int newY = atual.y + dy[i];
 
             if (newX >= 0 && newX < altura && newY >= 0 && newY < largura &&
-                labirinto->mapa[newX][newY] == '.' && // Modificado para permitir apenas '.'
+                (labirinto->mapa[newX][newY] == '.' || labirinto->mapa[newX][newY] == 'A') &&
                 pais[newX][newY].x == -1)
             {
                 Posicao novaPosicao = {newX, newY};
@@ -274,6 +285,24 @@ int encontrarMenorCaminho(Labirinto *labirinto, Posicao posicaoInicial, Pilha *c
                 pais[newX][newY] = atual;
                 movimentos[newX][newY] = direcoes[i];
             }
+        }
+
+        // Verifica se o jogador foi capturado por um monstro
+        if (labirinto->mapa[atual.x][atual.y] == 'M')
+        {
+            printf("Jogador capturado por um monstro!\n");
+
+            // Libera a memória alocada
+            for (int i = 0; i < altura; i++)
+            {
+                free(pais[i]);
+                free(movimentos[i]);
+            }
+            free(pais);
+            free(movimentos);
+            free(q.items);
+
+            return 0;
         }
     }
 
@@ -290,21 +319,167 @@ int encontrarMenorCaminho(Labirinto *labirinto, Posicao posicaoInicial, Pilha *c
     return 0;
 }
 
-// Função modificada para usar o novo algoritmo de busca
+void inicializarMonstros(Labirinto *labirinto)
+{
+    labirinto->numMonstros = 0;
+    for (int i = 0; i < labirinto->altura; i++)
+    {
+        for (int j = 0; j < labirinto->largura; j++)
+        {
+            if (labirinto->mapa[i][j] == 'M')
+            {
+                labirinto->monstros[labirinto->numMonstros].posicao.x = i;
+                labirinto->monstros[labirinto->numMonstros].posicao.y = j;
+                labirinto->numMonstros++;
+            }
+        }
+    }
+}
+
+int distanciaEntrePosicoes(Posicao p1, Posicao p2)
+{
+    return abs(p1.x - p2.x) + abs(p1.y - p2.y);
+}
+
+void moverMonstros(Labirinto *labirinto)
+{
+    int dx[] = {-1, 1, 0, 0};
+    int dy[] = {0, 0, -1, 1};
+
+    for (int i = 0; i < labirinto->numMonstros; i++)
+    {
+        int melhorDirecao = -1;
+        int menorDistancia = TAMANHO_MAX * TAMANHO_MAX;
+
+        for (int j = 0; j < 4; j++)
+        {
+            int newX = labirinto->monstros[i].posicao.x + dx[j];
+            int newY = labirinto->monstros[i].posicao.y + dy[j];
+
+            if (newX >= 0 && newX < labirinto->altura && newY >= 0 && newY < labirinto->largura &&
+                labirinto->mapa[newX][newY] != '#' && labirinto->mapa[newX][newY] != 'M')
+            {
+                Posicao novaPosicao = {newX, newY};
+                int distancia = distanciaEntrePosicoes(novaPosicao, labirinto->posicaoInicial);
+
+                if (distancia < menorDistancia)
+                {
+                    melhorDirecao = j;
+                    menorDistancia = distancia;
+                }
+            }
+        }
+
+        if (melhorDirecao != -1)
+        {
+            int newX = labirinto->monstros[i].posicao.x + dx[melhorDirecao];
+            int newY = labirinto->monstros[i].posicao.y + dy[melhorDirecao];
+
+            labirinto->mapa[labirinto->monstros[i].posicao.x][labirinto->monstros[i].posicao.y] = '.';
+            labirinto->mapa[newX][newY] = 'M';
+            labirinto->monstros[i].posicao.x = newX;
+            labirinto->monstros[i].posicao.y = newY;
+        }
+    }
+}
+
+int resolverLabirintoComMonstros(Labirinto *labirinto)
+{
+    Queue qA, qM;
+    initializeQueue(&qA, labirinto->altura * labirinto->largura);
+    initializeQueue(&qM, labirinto->altura * labirinto->largura);
+
+    bool visitadoA[TAMANHO_MAX][TAMANHO_MAX] = {false};
+    bool visitadoM[TAMANHO_MAX][TAMANHO_MAX] = {false};
+
+    enqueue(&qA, labirinto->posicaoInicial);
+    visitadoA[labirinto->posicaoInicial.x][labirinto->posicaoInicial.y] = true;
+
+    for (int i = 0; i < labirinto->numMonstros; i++)
+    {
+        enqueue(&qM, labirinto->monstros[i].posicao);
+        visitadoM[labirinto->monstros[i].posicao.x][labirinto->monstros[i].posicao.y] = true;
+    }
+
+    int dx[] = {-1, 1, 0, 0};
+    int dy[] = {0, 0, -1, 1};
+
+    while (!isQueueEmpty(&qA))
+    {
+        // Movimento de 'A'
+        int sizeA = qA.rear - qA.front + 1;
+        for (int a = 0; a < sizeA; a++)
+        {
+            Posicao currentA = dequeue(&qA);
+
+            // Verifica se 'A' chegou à saída
+            if (currentA.x == 0 || currentA.x == labirinto->altura - 1 ||
+                currentA.y == 0 || currentA.y == labirinto->largura - 1)
+            {
+                return 1; // 'A' escapou
+            }
+
+            // Explora vizinhos de 'A'
+            for (int i = 0; i < 4; i++)
+            {
+                int newX = currentA.x + dx[i];
+                int newY = currentA.y + dy[i];
+
+                if (newX >= 0 && newX < labirinto->altura && newY >= 0 && newY < labirinto->largura &&
+                    !visitadoA[newX][newY] && labirinto->mapa[newX][newY] != '#')
+                {
+                    Posicao newA = {newX, newY};
+                    enqueue(&qA, newA);
+                    visitadoA[newX][newY] = true;
+                }
+            }
+        }
+
+        // Movimento dos monstros
+        int sizeM = qM.rear - qM.front + 1;
+        for (int m = 0; m < sizeM; m++)
+        {
+            Posicao currentM = dequeue(&qM);
+
+            for (int i = 0; i < 4; i++)
+            {
+                int newX = currentM.x + dx[i];
+                int newY = currentM.y + dy[i];
+
+                if (newX >= 0 && newX < labirinto->altura && newY >= 0 && newY < labirinto->largura &&
+                    !visitadoM[newX][newY] && labirinto->mapa[newX][newY] != '#')
+                {
+                    Posicao newM = {newX, newY};
+                    enqueue(&qM, newM);
+                    visitadoM[newX][newY] = true;
+
+                    // Verifica se o monstro pegou 'A'
+                    if (visitadoA[newX][newY])
+                    {
+                        return 0; // Monstro pegou 'A'
+                    }
+                }
+            }
+        }
+    }
+
+    return 0; // 'A' não conseguiu escapar
+}
+
 void resolverLabirinto(Labirinto *labirinto)
 {
-    Pilha caminho;
-    inicializarPilha(&caminho, labirinto->altura * labirinto->largura);
+    inicializarMonstros(labirinto);
 
-    if (encontrarMenorCaminho(labirinto, labirinto->posicaoInicial, &caminho))
+    if (resolverLabirintoComMonstros(labirinto))
     {
         printf("YES\n");
-        imprimirPilha(&caminho);
+        // Aqui você pode adicionar lógica para reconstruir e imprimir o caminho, se necessário
     }
     else
     {
-        printf("NO.\n");
+        printf("NO\n");
     }
 
-    desalocarPilha(&caminho);
+    // Adicione esta linha para imprimir o labirinto após a resolução
+    imprimeLabirinto(labirinto);
 }

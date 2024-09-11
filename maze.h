@@ -1,10 +1,11 @@
-#ifndef __MAZE_H__
-#define __MAZE_H__
+#ifndef MAZE_H
+#define MAZE_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define TAMANHO_MAX 1000
 
@@ -44,6 +45,12 @@ typedef struct
     int size;
 } Queue;
 
+typedef struct
+{
+    int x, y;
+    int distance;
+} QueueItem;
+
 // Funções existentes
 void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
 void carregaLabirintoAleatorio(Labirinto *labirinto);
@@ -64,6 +71,11 @@ Posicao dequeue(Queue *q);
 
 // Nova função para encontrar o menor caminho
 int encontrarMenorCaminho(Labirinto *labirinto, Posicao posicaoInicial, Pilha *caminho);
+
+void inicializarMonstros(Labirinto *labirinto);
+int distanciaEntrePosicoes(Posicao p1, Posicao p2);
+void moverMonstros(Labirinto *labirinto);
+int resolverLabirintoComMonstros(Labirinto *labirinto);
 
 // Função modificada para resolver o labirinto
 void resolverLabirinto(Labirinto *labirinto);
