@@ -49,19 +49,37 @@ void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas)
     labirinto->altura = linhas;
     labirinto->largura = colunas;
 
-    carregaLabirintoAleatorio(labirinto);
-
     int i, j;
+    int contadorA = 0;
+
+    // le cada caractere
     for (i = 0; i < labirinto->altura; i++)
     {
         for (j = 0; j < labirinto->largura; j++)
         {
-            if (labirinto->mapa[i][j] != '.' && labirinto->mapa[i][j] != '#' && labirinto->mapa[i][j] != 'A' && labirinto->mapa[i][j] != 'M')
+            scanf(" %c", &labirinto->mapa[i][j]);
+            if (labirinto->mapa[i][j] == 'A')
+            {
+                labirinto->posicaoInicial.x = i;
+                labirinto->posicaoInicial.y = j;
+                contadorA++;
+            }
+            if (labirinto->mapa[i][j] != 'A' && labirinto->mapa[i][j] != '.' && labirinto->mapa[i][j] != '#' && labirinto->mapa[i][j] != 'M')
             {
                 printf("Erro: Caractere inválido '%c' encontrado no labirinto.\n", labirinto->mapa[i][j]);
-                return;
+                exit(1);
             }
         }
+    }
+    if (contadorA == 0)
+    {
+        printf("Erro: Nenhum ponto inicial 'A' encontrado no labirinto.\n");
+        exit(1);
+    }
+    else if (contadorA > 1)
+    {
+        printf("Erro: Mais de um ponto inicial 'A' encontrado no labirinto.\n");
+        exit(1);
     }
 }
 
@@ -75,15 +93,15 @@ void imprimeLabirinto(Labirinto *labirinto)
         {
             printf("%c", labirinto->mapa[i][j]);
         }
-        printf("\n"); // Adiciona uma nova linha após cada linha do labirinto
+        printf("\n");
     }
     printf("\n");
 }
 
 void inicializarPilha(Pilha *pilha, int tamanho_maximo)
 {
-    pilha->pilha = (Posicao *)malloc(tamanho_maximo * sizeof(Posicao));
-    pilha->movimentos = (char *)malloc(tamanho_maximo * sizeof(char)); // Aloca espaço para os movimentos
+    // pilha->pilha = (Posicao *)malloc(tamanho_maximo * sizeof(Posicao));
+    pilha->movimentos = (char *)malloc(tamanho_maximo * sizeof(char));
     if (pilha->pilha == NULL || pilha->movimentos == NULL)
     {
         printf("Erro ao alocar memória para a pilha.\n");
@@ -103,7 +121,7 @@ void empilhar(Pilha *pilha, Posicao pos, char movimento)
     if (pilha->topo < pilha->tamanho_maximo - 1)
     {
         pilha->pilha[++(pilha->topo)] = pos;
-        pilha->movimentos[pilha->topo] = movimento; // Armazena o movimento
+        pilha->movimentos[pilha->topo] = movimento;
     }
     else
     {
@@ -123,64 +141,170 @@ Posicao desempilhar(Pilha *pilha)
 
 void imprimirPilha(Pilha *pilha)
 {
-    printf("Posição inicial: (Linha: %d, Coluna: %d)\n", pilha->pilha[0].x + 1, pilha->pilha[0].y + 1);
-    for (int i = pilha->topo; i >= 0; i--)
-    {
-        printf("(%d,%d) -> ", pilha->pilha[i].x + 1, pilha->pilha[i].y + 1);
-    }
+    // printf("Posição inicial: (Linha: %d, Coluna: %d)\n", pilha->pilha[0].x + 1, pilha->pilha[0].y + 1);
+    // for (int i = pilha->topo; i >= 0; i--)
+    // {
+    //     printf("(%d,%d) -> ", pilha->pilha[i].x + 1, pilha->pilha[i].y + 1);
+    // }
     printf("\n");
     for (int i = pilha->topo; i >= 0; i--)
     {
         printf("%c", pilha->movimentos[i]);
     }
-    printf("\nSaiu\n");
-    printf("Tamanho da pilha: %d\n", pilha->topo);
+    // printf("\nSaiu\n");
+    printf("\n");
+    printf("%d\n", pilha->topo);
+    // printf("Tamanho da pilha: %d\n", pilha->topo);
 }
 
 void desalocarPilha(Pilha *pilha)
 {
     free(pilha->pilha);
-    free(pilha->movimentos); // Libera a memória dos movimentos
+    free(pilha->movimentos);
 }
 
-// Direções para cima, baixo, esquerda, direita
-int dx[4] = {-1, 1, 0, 0};
-int dy[4] = {0, 0, -1, 1};
-char movimentos[4] = {'U', 'D', 'L', 'R'}; // Cima, Baixo, Esquerda, Direita
-
-int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho)
+// Funções para a fila
+void initializeQueue(Queue *q, int maxSize)
 {
-    // Se a posição atual estiver na borda do labirinto, encontramos a saída
-    if (posicaoAtual.x == 0 || posicaoAtual.x == labirinto->altura - 1 ||
-        posicaoAtual.y == 0 || posicaoAtual.y == labirinto->largura - 1)
+    q->items = (Posicao *)malloc(maxSize * sizeof(Posicao));
+    q->front = -1;
+    q->rear = -1;
+    q->size = maxSize;
+}
+
+int isQueueEmpty(Queue *q)
+{
+    return q->front == -1;
+}
+
+void enqueue(Queue *q, Posicao value)
+{
+    if (q->rear == q->size - 1)
+        return;
+    if (q->front == -1)
+        q->front = 0;
+    q->rear++;
+    q->items[q->rear] = value;
+}
+
+Posicao dequeue(Queue *q)
+{
+    Posicao item = q->items[q->front];
+    q->front++;
+    if (q->front > q->rear)
+        q->front = q->rear = -1;
+    return item;
+}
+
+// Função modificada para encontrar o menor caminho
+int encontrarMenorCaminho(Labirinto *labirinto, Posicao posicaoInicial, Pilha *caminho)
+{
+    int altura = labirinto->altura;
+    int largura = labirinto->largura;
+
+    // Matriz para armazenar os pais de cada posição
+    Posicao **pais = (Posicao **)malloc(altura * sizeof(Posicao *));
+    for (int i = 0; i < altura; i++)
     {
-        empilhar(caminho, posicaoAtual, '\0');
-        return 1;
+        pais[i] = (Posicao *)malloc(largura * sizeof(Posicao));
+        for (int j = 0; j < largura; j++)
+        {
+            pais[i][j].x = -1;
+            pais[i][j].y = -1;
+        }
     }
 
-    // Marca a posição atual como visitada
-    labirinto->mapa[posicaoAtual.x][posicaoAtual.y] = '#';
-
-    // Testa todas as quatro direções (cima, baixo, esquerda, direita)
-    for (int i = 0; i < 4; i++)
+    // Matriz para armazenar os movimentos
+    char **movimentos = (char **)malloc(altura * sizeof(char *));
+    for (int i = 0; i < altura; i++)
     {
-        Posicao novaPosicao = {posicaoAtual.x + dx[i], posicaoAtual.y + dy[i]};
+        movimentos[i] = (char *)malloc(largura * sizeof(char));
+        memset(movimentos[i], 0, largura * sizeof(char));
+    }
 
-        // Verifica se a nova posição está dentro dos limites e é um caminho válido
-        if (novaPosicao.x >= 0 && novaPosicao.x < labirinto->altura &&
-            novaPosicao.y >= 0 && novaPosicao.y < labirinto->largura &&
-            labirinto->mapa[novaPosicao.x][novaPosicao.y] == '.')
+    Queue q;
+    initializeQueue(&q, altura * largura);
+
+    enqueue(&q, posicaoInicial);
+    pais[posicaoInicial.x][posicaoInicial.y] = posicaoInicial;
+
+    int dx[] = {-1, 1, 0, 0};
+    int dy[] = {0, 0, -1, 1};
+    char direcoes[] = {'U', 'D', 'L', 'R'};
+
+    while (!isQueueEmpty(&q))
+    {
+        Posicao atual = dequeue(&q);
+
+        // Se chegou à borda, encontrou a saída
+        if (atual.x == 0 || atual.x == altura - 1 || atual.y == 0 || atual.y == largura - 1)
         {
-
-            if (encontrarCaminho(labirinto, novaPosicao, caminho))
+            // Reconstrói o caminho
+            while (atual.x != posicaoInicial.x || atual.y != posicaoInicial.y)
             {
-                empilhar(caminho, posicaoAtual, movimentos[i]); // Armazena o movimento correspondente
-                return 1;
+                empilhar(caminho, atual, movimentos[atual.x][atual.y]);
+                atual = pais[atual.x][atual.y];
+            }
+            empilhar(caminho, posicaoInicial, '\0');
+
+            // Libera a memória alocada
+            for (int i = 0; i < altura; i++)
+            {
+                free(pais[i]);
+                free(movimentos[i]);
+            }
+            free(pais);
+            free(movimentos);
+            free(q.items);
+
+            return 1;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            int newX = atual.x + dx[i];
+            int newY = atual.y + dy[i];
+
+            if (newX >= 0 && newX < altura && newY >= 0 && newY < largura &&
+                labirinto->mapa[newX][newY] == '.' && // Modificado para permitir apenas '.'
+                pais[newX][newY].x == -1)
+            {
+                Posicao novaPosicao = {newX, newY};
+                enqueue(&q, novaPosicao);
+                pais[newX][newY] = atual;
+                movimentos[newX][newY] = direcoes[i];
             }
         }
     }
 
-    // Se não encontrou um caminho, desmarca a posição atual como visitada
-    labirinto->mapa[posicaoAtual.x][posicaoAtual.y] = '.';
+    // Libera a memória se não encontrou caminho
+    for (int i = 0; i < altura; i++)
+    {
+        free(pais[i]);
+        free(movimentos[i]);
+    }
+    free(pais);
+    free(movimentos);
+    free(q.items);
+
     return 0;
+}
+
+// Função modificada para usar o novo algoritmo de busca
+void resolverLabirinto(Labirinto *labirinto)
+{
+    Pilha caminho;
+    inicializarPilha(&caminho, labirinto->altura * labirinto->largura);
+
+    if (encontrarMenorCaminho(labirinto, labirinto->posicaoInicial, &caminho))
+    {
+        printf("YES\n");
+        imprimirPilha(&caminho);
+    }
+    else
+    {
+        printf("NO.\n");
+    }
+
+    desalocarPilha(&caminho);
 }

@@ -3,23 +3,16 @@
 int main()
 {
     Labirinto labirinto;
-    Pilha caminho;
-    inicializarPilha(&caminho, 1000); // Ajuste o tamanho máximo conforme necessário
+    int altura, largura;
 
-    carregarLabirinto(&labirinto, 5, 5); // Ajuste as dimensões conforme necessário
+    scanf("%d %d", &altura, &largura);
+
+    carregarLabirinto(&labirinto, altura, largura);
+    // printf("Labirinto gerado:\n");
     imprimeLabirinto(&labirinto);
 
-    printf("Buscando caminho...\n");
-    if (encontrarCaminho(&labirinto, labirinto.posicaoInicial, &caminho))
-    {
-        printf("Caminho encontrado:\n");
-        imprimirPilha(&caminho);
-    }
-    else
-    {
-        printf("Nenhum caminho encontrado.\n");
-    }
+    // printf("Buscando o menor caminho...\n");
+    resolverLabirinto(&labirinto);
 
-    desalocarPilha(&caminho);
     return 0;
 }
