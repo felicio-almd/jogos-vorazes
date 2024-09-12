@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -53,15 +52,14 @@ typedef struct
 
 // Funções existentes
 void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
-void carregaLabirintoAleatorio(Labirinto *labirinto);
 void imprimeLabirinto(Labirinto *labirinto);
 
 void inicializarPilha(Pilha *pilha, int tamanho_maximo);
 int pilhaVazia(Pilha *pilha);
 void empilhar(Pilha *pilha, Posicao pos, char movimento);
+Posicao desempilhar(Pilha *pilha);
 void imprimirPilha(Pilha *pilha);
 void desalocarPilha(Pilha *pilha);
-Posicao desempilhar(Pilha *pilha);
 
 // Novas funções para a fila
 void initializeQueue(Queue *q, int maxSize);
@@ -69,15 +67,9 @@ int isQueueEmpty(Queue *q);
 void enqueue(Queue *q, Posicao value);
 Posicao dequeue(Queue *q);
 
-// Nova função para encontrar o menor caminho
-int encontrarMenorCaminho(Labirinto *labirinto, Posicao posicaoInicial, Pilha *caminho);
-
 void inicializarMonstros(Labirinto *labirinto);
-int distanciaEntrePosicoes(Posicao p1, Posicao p2);
-void moverMonstros(Labirinto *labirinto);
 int resolverLabirintoComMonstros(Labirinto *labirinto);
 
-// Função modificada para resolver o labirinto
 void resolverLabirinto(Labirinto *labirinto);
 
 #endif
