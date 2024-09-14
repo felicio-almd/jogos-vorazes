@@ -3,73 +3,38 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
 
-#define TAMANHO_MAX 1000
-
-typedef struct
+// Estruturas
+typedef struct No
 {
-    int x, y;
-} Posicao;
+    char direcao;
+    int v[2];
+    struct No *prox;
+    struct No *ant;
+    int tam;
+} no;
 
-typedef struct monstros
+typedef struct Fila
 {
-    Posicao posicao;
-} Monstro;
+    int posi[2];
+    struct Fila *prox;
+} fila;
 
-typedef struct
-{
-    char mapa[TAMANHO_MAX][TAMANHO_MAX];
-    int altura, largura;
-    Posicao posicaoInicial;
-    Monstro monstros[TAMANHO_MAX];
-    int numMonstros;
-} Labirinto;
+// Funções para manipulação de nós
+no *criaNo();
+void empilha(no *Caminho, int posicao[2], char comando);
+void desempilha(no *caminho);
+void imprimeCaminho(no *Caminho);
+void imprimeVoltaCaminho(no *caminho);
 
-typedef struct
-{
-    Posicao *pilha;
-    int topo;
-    int tamanho_maximo;
-    char *movimentos;
-} Pilha;
+// Funções para manipulação de filas
+fila *criaFila();
+fila *removeFila(fila *fila);
+fila *addFila(fila *fila, int posicao[2]);
 
-// Nova estrutura para a fila
-typedef struct
-{
-    Posicao *items;
-    int front;
-    int rear;
-    int size;
-} Queue;
+// Funções principais do labirinto
+fila *achaposicao(int altura, int largura, int **labirinto, int M_A);
+void voltaCaminho(int altura, int largura, int **labirinto, int inicial[2], int final[2]);
+void sairLab(int altura, int largura, int **labirinto, fila *posiTributo, fila *posiMonstros);
 
-typedef struct
-{
-    int x, y;
-    int distance;
-} QueueItem;
-
-// Funções existentes
-void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
-void imprimeLabirinto(Labirinto *labirinto);
-
-void inicializarPilha(Pilha *pilha, int tamanho_maximo);
-int pilhaVazia(Pilha *pilha);
-void empilhar(Pilha *pilha, Posicao pos, char movimento);
-Posicao desempilhar(Pilha *pilha);
-void imprimirPilha(Pilha *pilha);
-void desalocarPilha(Pilha *pilha);
-
-// Novas funções para a fila
-void initializeQueue(Queue *q, int maxSize);
-int isQueueEmpty(Queue *q);
-void enqueue(Queue *q, Posicao value);
-Posicao dequeue(Queue *q);
-
-void inicializarMonstros(Labirinto *labirinto);
-int resolverLabirintoComMonstros(Labirinto *labirinto);
-
-void resolverLabirinto(Labirinto *labirinto);
-
-#endif
+#endif // MAZE_H
