@@ -12,7 +12,7 @@ typedef struct no
     struct no *prox;
     struct no *ant;
     int tamanho;
-} No;
+} NoPilha;
 
 typedef struct fila
 {
@@ -21,18 +21,18 @@ typedef struct fila
 } Fila;
 
 // Funções para manipulação de nós
-No *criaNo();
-void empilha(No *Caminho, int posicao[2], char comando);
-void desempilha(No *caminho);
-void imprimeCaminho(No *caminho);
+NoPilha *criaNo();
+void empilha(NoPilha *Caminho, int posicao[2], char comando);
+void desempilha(NoPilha *caminho);
+void imprimeCaminho(NoPilha *caminho);
 
 // Funções para manipulação de filas
 Fila *removeFila(Fila *fila);
 Fila *enfileira(Fila *fila, int posicao[2]);
 
 // Funções principais do labirinto
-Fila *acharPosicaoAtual(int altura, int largura, int **labirinto, int M_A);
-void voltaCaminho(int altura, int largura, int **labirinto, int inicial[2], int final[2]);
-void encontrarSaidaLabirinto(int altura, int largura, int **labirinto, Fila *posiTributo, Fila *posiMonstros);
+Fila *acharPosicaoAtual(int tipoEntidade, int altura, int largura, int **labirinto);
+void voltaCaminho(int altura, int largura, int **labirinto, int posicaoInicial[2], int posicaoFinal[2], NoPilha *caminho);
+void encontrarSaidaLabirinto(int **labirinto, int altura, int largura, Fila *posiTributo, Fila *posiMonstros);
 
 #endif // MAZE_H

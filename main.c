@@ -66,7 +66,7 @@ int main()
         }
     }
 
-    Fila *posicaoTributo = acharPosicaoAtual(altura, largura, labirintoComNumeros, 1);
+    Fila *posicaoTributo = acharPosicaoAtual(1, altura, largura, labirintoComNumeros);
     if (posicaoTributo == NULL)
     {
         printf("NO\n");
@@ -93,10 +93,9 @@ int main()
         return 0;
     }
 
-    Fila *posicaoMonstros = acharPosicaoAtual(altura, largura, labirintoComNumeros, 2);
-    encontrarSaidaLabirinto(altura, largura, labirintoComNumeros, posicaoTributo, posicaoMonstros);
+    Fila *posicaoBestantes = acharPosicaoAtual(2, altura, largura, labirintoComNumeros);
+    encontrarSaidaLabirinto(labirintoComNumeros, altura, largura, posicaoTributo, posicaoBestantes);
 
-    // Liberação de memoria
     for (int i = 0; i < altura; i++)
     {
         free(labirintoComNumeros[i]);
