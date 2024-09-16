@@ -1,16 +1,17 @@
 #include "maze.h"
 
-void empilha(NoPilha *caminho, int posicaoNoMapa[2], char comando)
+void empilha(NoPilha *caminho, int posicaoNoMapa[2], char direcaoCorrespondente)
 {
     NoPilha *novo = (NoPilha *)calloc(1, sizeof(NoPilha));
     NoPilha *aux = caminho;
 
     if (novo == NULL)
     {
-        printf("ERRO: problemas com a alocacao de memoria . \n");
+        printf("Erro de alocacao de memoria.\n");
         exit(1);
     }
-    novo->direcao = comando;
+
+    novo->direcao = direcaoCorrespondente;
     novo->coordenadasCaminho[0] = posicaoNoMapa[0];
     novo->coordenadasCaminho[1] = posicaoNoMapa[1];
 
@@ -18,6 +19,7 @@ void empilha(NoPilha *caminho, int posicaoNoMapa[2], char comando)
     {
         aux = aux->prox;
     }
+
     aux->prox = novo;
     novo->ant = aux;
     caminho->tamanho++;
@@ -33,23 +35,6 @@ void desempilha(NoPilha *caminho)
     aux->ant->prox = NULL;
     caminho->tamanho--;
     free(aux);
-}
-
-void imprimeCaminho(NoPilha *caminho)
-{
-    NoPilha *aux = caminho->prox; // Start from the first actual node, not the dummy head
-    if (aux == NULL)
-        return;
-    while (aux->prox != NULL)
-    {
-        aux = aux->prox;
-    }
-    while (aux != caminho)
-    {
-        printf("%c", aux->direcao);
-        aux = aux->ant;
-    }
-    printf("\n");
 }
 
 Fila *enfileira(Fila *posicaoNova, int posicao[2])
@@ -73,12 +58,12 @@ Fila *enfileira(Fila *posicaoNova, int posicao[2])
     return posicaoNova;
 }
 
-Fila *removeFila(Fila *F)
+Fila *removeFila(Fila *posicaoNova)
 {
-    Fila *aux = F;
-    F = aux->prox;
+    Fila *aux = posicaoNova;
+    posicaoNova = aux->prox;
     free(aux);
-    return F;
+    return posicaoNova;
 }
 
 Fila *acharPosicaoAtual(int tipoEntidade, int altura, int largura, int **labirinto)
@@ -129,6 +114,23 @@ Fila *acharPosicaoAtual(int tipoEntidade, int altura, int largura, int **labirin
         }
         return posicaoNova;
     }
+}
+
+void imprimeCaminho(NoPilha *caminho)
+{
+    NoPilha *aux = caminho->prox;
+    if (aux == NULL)
+        return;
+    while (aux->prox != NULL)
+    {
+        aux = aux->prox;
+    }
+    while (aux != caminho)
+    {
+        printf("%c", aux->direcao);
+        aux = aux->ant;
+    }
+    printf("\n");
 }
 
 void voltaCaminho(int altura, int largura, int **labirinto, int posicaoInicial[2], int posicaoFinal[2], NoPilha *caminho)
@@ -182,81 +184,108 @@ void voltaCaminho(int altura, int largura, int **labirinto, int posicaoInicial[2
     }
 }
 
+void processarMovimentosBestante(int **labirinto, int altura, int largura, Fila *posicaoBestante, Fila **aux)
+{
+    int posicao_aux[2];
+
+    while (posicaoBestante != NULL)
+    {
+        // Cima
+        if (posicaoBestante->posicaoNoLabirinto[0] != 0 && labirinto[posicaoBestante->posicaoNoLabirinto[0] - 1][posicaoBestante->posicaoNoLabirinto[1]] == 0)
+        {
+            labirinto[posicaoBestante->posicaoNoLabirinto[0] - 1][posicaoBestante->posicaoNoLabirinto[1]] = 2;
+            posicao_aux[0] = posicaoBestante->posicaoNoLabirinto[0] - 1;
+            posicao_aux[1] = posicaoBestante->posicaoNoLabirinto[1];
+            *aux = enfileira(*aux, posicao_aux);
+        }
+        // Direita
+        if (posicaoBestante->posicaoNoLabirinto[1] != largura - 1 && labirinto[posicaoBestante->posicaoNoLabirinto[0]][posicaoBestante->posicaoNoLabirinto[1] + 1] == 0)
+        {
+            labirinto[posicaoBestante->posicaoNoLabirinto[0]][posicaoBestante->posicaoNoLabirinto[1] + 1] = 2;
+            posicao_aux[0] = posicaoBestante->posicaoNoLabirinto[0];
+            posicao_aux[1] = posicaoBestante->posicaoNoLabirinto[1] + 1;
+            *aux = enfileira(*aux, posicao_aux);
+        }
+        // Baixo
+        if (posicaoBestante->posicaoNoLabirinto[0] != altura - 1 && labirinto[posicaoBestante->posicaoNoLabirinto[0] + 1][posicaoBestante->posicaoNoLabirinto[1]] == 0)
+        {
+            labirinto[posicaoBestante->posicaoNoLabirinto[0] + 1][posicaoBestante->posicaoNoLabirinto[1]] = 2;
+            posicao_aux[0] = posicaoBestante->posicaoNoLabirinto[0] + 1;
+            posicao_aux[1] = posicaoBestante->posicaoNoLabirinto[1];
+            *aux = enfileira(*aux, posicao_aux);
+        }
+        // Esquerda
+        if (posicaoBestante->posicaoNoLabirinto[1] != 0 && labirinto[posicaoBestante->posicaoNoLabirinto[0]][posicaoBestante->posicaoNoLabirinto[1] - 1] == 0)
+        {
+            labirinto[posicaoBestante->posicaoNoLabirinto[0]][posicaoBestante->posicaoNoLabirinto[1] - 1] = 2;
+            posicao_aux[0] = posicaoBestante->posicaoNoLabirinto[0];
+            posicao_aux[1] = posicaoBestante->posicaoNoLabirinto[1] - 1;
+            *aux = enfileira(*aux, posicao_aux);
+        }
+        posicaoBestante = removeFila(posicaoBestante);
+    }
+}
+
+void processarMovimentosTributo(int **labirinto, Fila *posicaoTributo, Fila **aux)
+{
+    int posicao_aux[2];
+
+    while (posicaoTributo != NULL)
+    {
+        // Cima
+        if (labirinto[posicaoTributo->posicaoNoLabirinto[0] - 1][posicaoTributo->posicaoNoLabirinto[1]] == 0)
+        {
+            labirinto[posicaoTributo->posicaoNoLabirinto[0] - 1][posicaoTributo->posicaoNoLabirinto[1]] = 1;
+            posicao_aux[0] = posicaoTributo->posicaoNoLabirinto[0] - 1;
+            posicao_aux[1] = posicaoTributo->posicaoNoLabirinto[1];
+            *aux = enfileira(*aux, posicao_aux);
+        }
+        // Direita
+        if (labirinto[posicaoTributo->posicaoNoLabirinto[0]][posicaoTributo->posicaoNoLabirinto[1] + 1] == 0)
+        {
+            labirinto[posicaoTributo->posicaoNoLabirinto[0]][posicaoTributo->posicaoNoLabirinto[1] + 1] = 1;
+            posicao_aux[0] = posicaoTributo->posicaoNoLabirinto[0];
+            posicao_aux[1] = posicaoTributo->posicaoNoLabirinto[1] + 1;
+            *aux = enfileira(*aux, posicao_aux);
+        }
+        // Baixo
+        if (labirinto[posicaoTributo->posicaoNoLabirinto[0] + 1][posicaoTributo->posicaoNoLabirinto[1]] == 0)
+        {
+            labirinto[posicaoTributo->posicaoNoLabirinto[0] + 1][posicaoTributo->posicaoNoLabirinto[1]] = 1;
+            posicao_aux[0] = posicaoTributo->posicaoNoLabirinto[0] + 1;
+            posicao_aux[1] = posicaoTributo->posicaoNoLabirinto[1];
+            *aux = enfileira(*aux, posicao_aux);
+        }
+        // Esquerda
+        if (labirinto[posicaoTributo->posicaoNoLabirinto[0]][posicaoTributo->posicaoNoLabirinto[1] - 1] == 0)
+        {
+            labirinto[posicaoTributo->posicaoNoLabirinto[0]][posicaoTributo->posicaoNoLabirinto[1] - 1] = 1;
+            posicao_aux[0] = posicaoTributo->posicaoNoLabirinto[0];
+            posicao_aux[1] = posicaoTributo->posicaoNoLabirinto[1] - 1;
+            *aux = enfileira(*aux, posicao_aux);
+        }
+        posicaoTributo = removeFila(posicaoTributo);
+    }
+}
+
 void encontrarSaidaLabirinto(int **labirinto, int altura, int largura, Fila *posicaoTributo, Fila *posicaoBestante)
 {
     Fila *aux;
-    int inicio[2], posicao_aux[2];
-    inicio[0] = posicaoTributo->posicaoNoLabirinto[0];
-    inicio[1] = posicaoTributo->posicaoNoLabirinto[1];
-    while (posicaoTributo != NULL && (posicaoTributo->posicaoNoLabirinto[0] != 0 && posicaoTributo->posicaoNoLabirinto[1] != largura - 1 && posicaoTributo->posicaoNoLabirinto[0] != altura - 1 && posicaoTributo->posicaoNoLabirinto[1] != 0))
+    int inicio[2] = {posicaoTributo->posicaoNoLabirinto[0], posicaoTributo->posicaoNoLabirinto[1]};
+
+    while (posicaoTributo != NULL && (posicaoTributo->posicaoNoLabirinto[0] != 0 && posicaoTributo->posicaoNoLabirinto[1] != largura - 1 &&
+                                      posicaoTributo->posicaoNoLabirinto[0] != altura - 1 && posicaoTributo->posicaoNoLabirinto[1] != 0))
     {
+
         aux = NULL;
-        while (posicaoBestante != NULL)
-        {
-            if (posicaoBestante->posicaoNoLabirinto[0] != 0 && labirinto[posicaoBestante->posicaoNoLabirinto[0] - 1][posicaoBestante->posicaoNoLabirinto[1]] == 0)
-            {
-                labirinto[posicaoBestante->posicaoNoLabirinto[0] - 1][posicaoBestante->posicaoNoLabirinto[1]] = 2;
-                posicao_aux[0] = posicaoBestante->posicaoNoLabirinto[0] - 1;
-                posicao_aux[1] = posicaoBestante->posicaoNoLabirinto[1];
-                aux = enfileira(aux, posicao_aux);
-            }
-            if (posicaoBestante->posicaoNoLabirinto[1] != largura - 1 && labirinto[posicaoBestante->posicaoNoLabirinto[0]][posicaoBestante->posicaoNoLabirinto[1] + 1] == 0)
-            {
-                labirinto[posicaoBestante->posicaoNoLabirinto[0]][posicaoBestante->posicaoNoLabirinto[1] + 1] = 2;
-                posicao_aux[0] = posicaoBestante->posicaoNoLabirinto[0];
-                posicao_aux[1] = posicaoBestante->posicaoNoLabirinto[1] + 1;
-                aux = enfileira(aux, posicao_aux);
-            }
-            if (posicaoBestante->posicaoNoLabirinto[0] != altura - 1 && labirinto[posicaoBestante->posicaoNoLabirinto[0] + 1][posicaoBestante->posicaoNoLabirinto[1]] == 0)
-            {
-                labirinto[posicaoBestante->posicaoNoLabirinto[0] + 1][posicaoBestante->posicaoNoLabirinto[1]] = 2;
-                posicao_aux[0] = posicaoBestante->posicaoNoLabirinto[0] + 1;
-                posicao_aux[1] = posicaoBestante->posicaoNoLabirinto[1];
-                aux = enfileira(aux, posicao_aux);
-            }
-            if (posicaoBestante->posicaoNoLabirinto[1] != 0 && labirinto[posicaoBestante->posicaoNoLabirinto[0]][posicaoBestante->posicaoNoLabirinto[1] - 1] == 0)
-            {
-                labirinto[posicaoBestante->posicaoNoLabirinto[0]][posicaoBestante->posicaoNoLabirinto[1] - 1] = 2;
-                posicao_aux[0] = posicaoBestante->posicaoNoLabirinto[0];
-                posicao_aux[1] = posicaoBestante->posicaoNoLabirinto[1] - 1;
-                aux = enfileira(aux, posicao_aux);
-            }
-            posicaoBestante = removeFila(posicaoBestante);
-        }
+
+        // Processa movimentação dos bestantes
+        processarMovimentosBestante(labirinto, altura, largura, posicaoBestante, &aux);
         posicaoBestante = aux;
+
+        // Processa movimentação do tributo
         aux = NULL;
-        while (posicaoTributo != NULL && (posicaoTributo->posicaoNoLabirinto[0] != 0 && posicaoTributo->posicaoNoLabirinto[1] != largura - 1 && posicaoTributo->posicaoNoLabirinto[0] != altura - 1 && posicaoTributo->posicaoNoLabirinto[1] != 0))
-        {
-            if (labirinto[posicaoTributo->posicaoNoLabirinto[0] - 1][posicaoTributo->posicaoNoLabirinto[1]] == 0)
-            {
-                labirinto[posicaoTributo->posicaoNoLabirinto[0] - 1][posicaoTributo->posicaoNoLabirinto[1]] = 1;
-                posicao_aux[0] = posicaoTributo->posicaoNoLabirinto[0] - 1;
-                posicao_aux[1] = posicaoTributo->posicaoNoLabirinto[1];
-                aux = enfileira(aux, posicao_aux);
-            }
-            if (labirinto[posicaoTributo->posicaoNoLabirinto[0]][posicaoTributo->posicaoNoLabirinto[1] + 1] == 0)
-            {
-                labirinto[posicaoTributo->posicaoNoLabirinto[0]][posicaoTributo->posicaoNoLabirinto[1] + 1] = 1;
-                posicao_aux[0] = posicaoTributo->posicaoNoLabirinto[0];
-                posicao_aux[1] = posicaoTributo->posicaoNoLabirinto[1] + 1;
-                aux = enfileira(aux, posicao_aux);
-            }
-            if (labirinto[posicaoTributo->posicaoNoLabirinto[0] + 1][posicaoTributo->posicaoNoLabirinto[1]] == 0)
-            {
-                labirinto[posicaoTributo->posicaoNoLabirinto[0] + 1][posicaoTributo->posicaoNoLabirinto[1]] = 1;
-                posicao_aux[0] = posicaoTributo->posicaoNoLabirinto[0] + 1;
-                posicao_aux[1] = posicaoTributo->posicaoNoLabirinto[1];
-                aux = enfileira(aux, posicao_aux);
-            }
-            if (labirinto[posicaoTributo->posicaoNoLabirinto[0]][posicaoTributo->posicaoNoLabirinto[1] - 1] == 0)
-            {
-                labirinto[posicaoTributo->posicaoNoLabirinto[0]][posicaoTributo->posicaoNoLabirinto[1] - 1] = 1;
-                posicao_aux[0] = posicaoTributo->posicaoNoLabirinto[0];
-                posicao_aux[1] = posicaoTributo->posicaoNoLabirinto[1] - 1;
-                aux = enfileira(aux, posicao_aux);
-            }
-            posicaoTributo = removeFila(posicaoTributo);
-        }
+        processarMovimentosTributo(labirinto, posicaoTributo, &aux);
         posicaoTributo = aux;
     }
 
@@ -264,7 +293,7 @@ void encontrarSaidaLabirinto(int **labirinto, int altura, int largura, Fila *pos
 
     if (caminho == NULL)
     {
-        printf("ERRO: problemas com a alocacao de memoria . \n");
+        printf("ERRO: problemas com a alocacao de memoria.\n");
         exit(1);
     }
 
