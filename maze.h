@@ -5,36 +5,34 @@
 #include <stdlib.h>
 
 // Estruturas
-typedef struct No
+typedef struct no
 {
     char direcao;
-    int v[2];
-    struct No *prox;
-    struct No *ant;
-    int tam;
-} no;
+    int coordenadasCaminho[2];
+    struct no *prox;
+    struct no *ant;
+    int tamanho;
+} No;
 
-typedef struct Fila
+typedef struct fila
 {
-    int posi[2];
-    struct Fila *prox;
-} fila;
+    int posicaoNoLabirinto[2];
+    struct fila *prox;
+} Fila;
 
 // Funções para manipulação de nós
-no *criaNo();
-void empilha(no *Caminho, int posicao[2], char comando);
-void desempilha(no *caminho);
-void imprimeCaminho(no *Caminho);
-void imprimeVoltaCaminho(no *caminho);
+No *criaNo();
+void empilha(No *Caminho, int posicao[2], char comando);
+void desempilha(No *caminho);
+void imprimeCaminho(No *caminho);
 
 // Funções para manipulação de filas
-fila *criaFila();
-fila *removeFila(fila *fila);
-fila *addFila(fila *fila, int posicao[2]);
+Fila *removeFila(Fila *fila);
+Fila *enfileira(Fila *fila, int posicao[2]);
 
 // Funções principais do labirinto
-fila *achaposicao(int altura, int largura, int **labirinto, int M_A);
+Fila *acharPosicaoAtual(int altura, int largura, int **labirinto, int M_A);
 void voltaCaminho(int altura, int largura, int **labirinto, int inicial[2], int final[2]);
-void sairLab(int altura, int largura, int **labirinto, fila *posiTributo, fila *posiMonstros);
+void encontrarSaidaLabirinto(int altura, int largura, int **labirinto, Fila *posiTributo, Fila *posiMonstros);
 
 #endif // MAZE_H

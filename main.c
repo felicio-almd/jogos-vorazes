@@ -4,12 +4,42 @@ int main()
 {
     int altura, largura;
     scanf("%d %d", &altura, &largura);
+
+    if (altura < 1 || altura > 1000 || largura < 1 || largura > 1000)
+    {
+        printf("Dimensões Inválidas, digite um tamanho entre 1 e 1000.\n");
+        return 1;
+    }
+
     char *labirinto = (char *)malloc((largura + 1) * sizeof(char));
-    int **lab = (int **)malloc(altura * sizeof(int *));
+    if (labirinto == NULL)
+    {
+        printf("Erro de alocação de memoria.\n");
+        return 1;
+    }
+
+    int **labirintoComNumeros = (int **)malloc(altura * sizeof(int *));
+    if (labirintoComNumeros == NULL)
+    {
+        printf("Erro de alocação de memoria.\n");
+        free(labirinto);
+        return 1;
+    }
 
     for (int i = 0; i < altura; i++)
-    { // Aloca memoria para armazenar o labirinto como uma matriz de caracteres (int **)
-        lab[i] = (int *)malloc((largura) * sizeof(int));
+    {
+        labirintoComNumeros[i] = (int *)malloc(largura * sizeof(int));
+        if (labirintoComNumeros[i] == NULL)
+        {
+            printf("Erro de alocação de memoria.\n");
+            for (int j = 0; j < i; j++)
+            {
+                free(labirintoComNumeros[j]);
+            }
+            free(labirintoComNumeros);
+            free(labirinto);
+            return 1;
+        }
     }
 
     for (int i = 0; i < altura; i++)
@@ -19,31 +49,60 @@ int main()
         {
             if (labirinto[j] == '#')
             {
-                lab[i][j] = 3;
+                labirintoComNumeros[i][j] = 3;
             }
             else if (labirinto[j] == 'M')
             {
-                lab[i][j] = 2;
+                labirintoComNumeros[i][j] = 2;
             }
             else if (labirinto[j] == 'A')
             {
-                lab[i][j] = 1;
+                labirintoComNumeros[i][j] = 1;
             }
             else
             {
-                lab[i][j] = 0;
+                labirintoComNumeros[i][j] = 0;
             }
         }
     }
-    fila *posicaoTributo = achaposicao(altura, largura, lab, 1);
-    if (posicaoTributo->posi[0] == 0 || posicaoTributo->posi[1] == largura - 1 || posicaoTributo->posi[0] == altura - 1 || posicaoTributo->posi[1] == 0)
+
+    Fila *posicaoTributo = acharPosicaoAtual(altura, largura, labirintoComNumeros, 1);
+    if (posicaoTributo == NULL)
     {
-        printf("YES\n");
-        printf("%d", 0);
+        printf("NO\n");
+        for (int i = 0; i < altura; i++)
+        {
+            free(labirintoComNumeros[i]);
+        }
+        free(labirintoComNumeros);
+        free(labirinto);
         return 0;
     }
-    fila *posicaoMonstros = achaposicao(altura, largura, lab, 2);
-    sairLab(altura, largura, lab, posicaoTributo, posicaoMonstros);
-    printf("\n");
+
+    if (posicaoTributo->posicaoNoLabirinto[0] == 0 || posicaoTributo->posicaoNoLabirinto[1] == largura - 1 || posicaoTributo->posicaoNoLabirinto[0] == altura - 1 || posicaoTributo->posicaoNoLabirinto[1] == 0)
+    {
+        printf("YES\n");
+        printf("0\n");
+        for (int i = 0; i < altura; i++)
+        {
+            free(labirintoComNumeros[i]);
+        }
+        free(labirintoComNumeros);
+        free(labirinto);
+        free(posicaoTributo);
+        return 0;
+    }
+
+    Fila *posicaoMonstros = acharPosicaoAtual(altura, largura, labirintoComNumeros, 2);
+    encontrarSaidaLabirinto(altura, largura, labirintoComNumeros, posicaoTributo, posicaoMonstros);
+
+    // Liberação de memoria
+    for (int i = 0; i < altura; i++)
+    {
+        free(labirintoComNumeros[i]);
+    }
+    free(labirintoComNumeros);
+    free(labirinto);
+
     return 0;
 }
