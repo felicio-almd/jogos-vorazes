@@ -7,38 +7,36 @@
 #include <stdbool.h>
 
 // Estruturas
-typedef struct No
+typedef struct no
 {
     char direcao;
-    int v[2];
-    struct No *prox;
-    struct No *ant;
-    int tam;
-} no;
+    int v[2]; // para que serve?
+    struct no *prox;
+    struct no *ant;
+    int tamanho;
+} NoPilha;
 
-typedef struct Fila
+typedef struct fila
 {
-    int posi[2];
-    struct Fila *prox;
-} fila;
+    int posicaoNoLabirinto[2];
+    struct fila *prox;
+} Fila;
 
 // Funções para manipulação de nós
-no *criaNo();
-void empilha(no *Caminho, int posicao[2], char comando);
-void desempilha(no *caminho);
-void imprimeCaminho(no *Caminho);
-void imprimeVoltaCaminho(no *caminho);
+NoPilha *criaNo();
+void empilha(NoPilha *caminho, int posicao[2], char comando);
+void desempilha(NoPilha *caminho);
+void imprimeCaminho(NoPilha *caminho);
 
 // Funções para manipulação de filas
-fila *criaFila();
-fila *removeFila(fila *fila);
-fila *addFila(fila *fila, int posicao[2]);
+Fila *criarFilaVazia();
+Fila *removerDaFila(Fila *fila);
+Fila *enfileirar(Fila *fila, int posicao[2]);
 
 // Funções principais do labirinto
-fila *achaposicao(int altura, int largura, int **labirinto, int M_A);
-void voltaCaminho(int altura, int largura, int **labirinto, int inicial[2], int final[2]);
-void sairLab(int altura, int largura, int **labirinto, fila *posiTributo, fila *posiMonstros);
-int distancia(int x1, int y1, int x2, int y2);
+Fila *acharPosicao(int altura, int largura, int **labirinto, int M_A); // mudar esse M_A
+void escaparLabirinto(int altura, int largura, int **labirinto, Fila *posicaoTributo, Fila *posicaoBestante);
+int distanciaEntreOsPersonagens(int x1, int y1, int x2, int y2);
 bool moveBestante(int altura, int largura, int **labirinto, int *bestante, int *tributo);
-bool moveTributo(int altura, int largura, int **labirinto, int *tributo, no *caminho);
+bool moveTributo(int altura, int largura, int **labirinto, int *tributo, NoPilha *caminho);
 #endif // MAZE_H

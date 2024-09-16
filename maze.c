@@ -1,10 +1,10 @@
 #include "maze.h"
 #include <stdbool.h>
 
-no *criaNo()
+NoPilha *criaNo()
 {
-    no *novo;
-    novo = (no *)calloc(1, sizeof(no));
+    NoPilha *novo;
+    novo = (NoPilha *)calloc(1, sizeof(NoPilha));
     if (novo == NULL)
     {
         printf("ERRO: problemas com a alocacao de memoria . \n");
@@ -13,52 +13,50 @@ no *criaNo()
     return novo;
 }
 
-void empilha(no *Caminho, int posicao[2], char comando)
+void empilha(NoPilha *caminho, int posicao[2], char comando)
 {
-    no *novo = criaNo();
+    NoPilha *novo = criaNo();
     novo->direcao = comando;
-    novo->v[0] = posicao[0];
+    novo->v[0] = posicao[0]; // trocar esse v que porra é essa
     novo->v[1] = posicao[1];
-    no *aux = Caminho;
+    NoPilha *aux = caminho;
     while (aux->prox != NULL)
     {
         aux = aux->prox;
     }
     aux->prox = novo;
     novo->ant = aux;
-    Caminho->tam++;
+    caminho->tamanho++;
 }
-void desempilha(no *caminho)
+
+void desempilha(NoPilha *caminho)
 {
-    no *aux = caminho;
+    NoPilha *aux = caminho;
     while (aux->prox != NULL)
     {
         aux = aux->prox;
     }
     aux->ant->prox = NULL;
-    caminho->tam--;
+    caminho->tamanho--;
     free(aux);
 }
 
-void imprimeVoltaCaminho(no *Caminho)
+void imprimeCaminho(NoPilha *Caminho)
 {
-    no *aux = Caminho->prox;
+    NoPilha *aux = Caminho->prox;
     if (aux == NULL)
         return;
     while (aux->prox != NULL)
     {
+        printf("%c", aux->direcao);
         aux = aux->prox;
     }
-    while (aux != Caminho)
-    {
-        printf("%c", aux->direcao);
-        aux = aux->ant;
-    }
+    printf("\n");
 }
 
-fila *criaFila()
+Fila *criarFilaVazia()
 {
-    fila *novo = (fila *)calloc(1, sizeof(fila));
+    Fila *novo = (Fila *)calloc(1, sizeof(Fila));
     if (novo == NULL)
     {
         printf("Erro de alocacao\n");
@@ -67,32 +65,32 @@ fila *criaFila()
     return novo;
 }
 
-fila *addFila(fila *F, int posicao[2])
+Fila *enfileirar(Fila *fila, int posicao[2])
 {
-    fila *novo = criaFila();
-    novo->posi[0] = posicao[0];
-    novo->posi[1] = posicao[1];
-    fila *aux = F;
-    if (F == NULL)
+    Fila *novo = criarFilaVazia();
+    novo->posicaoNoLabirinto[0] = posicao[0];
+    novo->posicaoNoLabirinto[1] = posicao[1];
+    Fila *aux = fila;
+    if (fila == NULL)
         return novo;
     while (aux->prox != NULL)
         aux = aux->prox;
     aux->prox = novo;
-    return F;
+    return fila;
 }
 
-fila *removeFila(fila *F)
+Fila *removeFila(Fila *fila)
 {
-    fila *aux = F;
-    F = aux->prox;
+    Fila *aux = fila;
+    fila = aux->prox;
     free(aux);
-    return F;
+    return fila;
 }
 
-fila *achaposicao(int altura, int largura, int **labirinto, int M_A)
+Fila *acharPosicao(int altura, int largura, int **labirinto, int M_A) // dnv esse M_A sla
 {
     int posicao[2];
-    fila *posi = NULL;
+    Fila *posicaoAtual = NULL;
     if (M_A == 1)
     {
         for (int i = 0; i < altura; i++)
@@ -103,11 +101,11 @@ fila *achaposicao(int altura, int largura, int **labirinto, int M_A)
                 {
                     posicao[0] = i;
                     posicao[1] = j;
-                    posi = addFila(posi, posicao);
+                    posicaoAtual = enfileirar(posicaoAtual, posicao);
                 }
             }
         }
-        return posi;
+        return posicaoAtual;
     }
     else
     {
@@ -123,125 +121,67 @@ fila *achaposicao(int altura, int largura, int **labirinto, int M_A)
                         {
                             posicao[0] = i;
                             posicao[1] = j;
-                            posi = addFila(posi, posicao);
+                            posicaoAtual = enfileirar(posicaoAtual, posicao);
                         }
                     }
                     else
                     {
                         posicao[0] = i;
                         posicao[1] = j;
-                        posi = addFila(posi, posicao);
+                        posicaoAtual = enfileirar(posicaoAtual, posicao);
                     }
                 }
             }
         }
-        return posi;
+        return posicaoAtual;
     }
 }
 
-void voltaCaminho(int altura, int largura, int **labirinto, int inicial[2], int final[2])
-{
-    no *caminho = criaNo();
-    while ((final[0] != inicial[0]) || (final[1] != inicial[1]))
-    {
-        if (final[0] != 0 && labirinto[final[0] - 1][final[1]] == 1)
-        {
-            labirinto[final[0]][final[1]] = 4;
-            final[0] = final[0] - 1;
-            empilha(caminho, final, 'D');
-        }
-        else if (final[1] != largura - 1 && labirinto[final[0]][final[1] + 1] == 1)
-        {
-            labirinto[final[0]][final[1]] = 4;
-            final[1] = final[1] + 1;
-            empilha(caminho, final, 'L');
-        }
-        else if (final[0] != altura - 1 && labirinto[final[0] + 1][final[1]] == 1)
-        {
-            labirinto[final[0]][final[1]] = 4;
-            final[0] = final[0] + 1;
-            empilha(caminho, final, 'U');
-        }
-        else if (final[1] != 0 && labirinto[final[0]][final[1] - 1] == 1)
-        {
-            labirinto[final[0]][final[1]] = 4;
-            final[1] = final[1] - 1;
-            empilha(caminho, final, 'R');
-        }
-        else if (labirinto[final[0] - 1][final[1]] == 4)
-        {
-            labirinto[final[0]][final[1]] = 3;
-            final[0] = final[0] - 1;
-            desempilha(caminho);
-        }
-        else if (labirinto[final[0]][final[1] + 1] == 4)
-        {
-            labirinto[final[0]][final[1]] = 3;
-            final[1] = final[1] + 1;
-            desempilha(caminho);
-        }
-        else if (labirinto[final[0] + 1][final[1]] == 4)
-        {
-            labirinto[final[0]][final[1]] = 3;
-            final[0] = final[0] + 1;
-            desempilha(caminho);
-        }
-        else if (labirinto[final[0]][final[1] - 1] == 4)
-        {
-            labirinto[final[0]][final[1]] = 3;
-            final[1] = final[1] - 1;
-            desempilha(caminho);
-        }
-    }
-    printf("YES\n");
-    printf("%d\n", caminho->tam);
-    imprimeVoltaCaminho(caminho);
-}
-
-int distancia(int x1, int y1, int x2, int y2)
+int distanciaEntreOsPersonagens(int x1, int y1, int x2, int y2)
 {
     return abs(x1 - x2) + abs(y1 - y2);
 }
 
 bool moveBestante(int altura, int largura, int **labirinto, int *bestante, int *tributo)
 {
-    int melhor_x = bestante[0], melhor_y = bestante[1];
-    int menor_dist = distancia(bestante[0], bestante[1], tributo[0], tributo[1]);
+    int melhorX = bestante[0], melhorY = bestante[1];
+    int menorDistancia = distanciaEntreOsPersonagens(bestante[0], bestante[1], tributo[0], tributo[1]);
+    int novoX, novoY, novaDistancia;
 
     int dx[] = {-1, 0, 1, 0};
     int dy[] = {0, 1, 0, -1};
 
     for (int i = 0; i < 4; i++)
     {
-        int novo_x = bestante[0] + dx[i];
-        int novo_y = bestante[1] + dy[i];
+        novoX = bestante[0] + dx[i];
+        novoY = bestante[1] + dy[i];
 
-        if (novo_x >= 0 && novo_x < altura && novo_y >= 0 && novo_y < largura &&
-            labirinto[novo_x][novo_y] != 3)
-        { // Não é parede
-            int nova_dist = distancia(novo_x, novo_y, tributo[0], tributo[1]);
-            if (nova_dist < menor_dist)
+        if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura &&
+            labirinto[novoX][novoY] != 3 && labirinto[novoX][novoY] != 5)
+        { // Não é parede e não foi visitado
+            novaDistancia = distanciaEntreOsPersonagens(novoX, novoY, tributo[0], tributo[1]);
+            if (novaDistancia < menorDistancia)
             {
-                menor_dist = nova_dist;
-                melhor_x = novo_x;
-                melhor_y = novo_y;
+                menorDistancia = novaDistancia;
+                melhorX = novoX;
+                melhorY = novoY;
             }
         }
     }
 
-    if (melhor_x == tributo[0] && melhor_y == tributo[1])
+    if (melhorX == tributo[0] && melhorY == tributo[1])
     {
         return true; // Bestante alcançou o tributo
     }
 
     labirinto[bestante[0]][bestante[1]] = 0; // Libera a posição atual
-    bestante[0] = melhor_x;
-    bestante[1] = melhor_y;
-    labirinto[melhor_x][melhor_y] = 2; // Marca a nova posição do bestante
+    bestante[0] = melhorX;
+    bestante[1] = melhorY;
+    labirinto[melhorX][melhorY] = 2; // Marca a nova posição do bestante
     return false;
 }
 
-bool moveTributo(int altura, int largura, int **labirinto, int *tributo, no *caminho)
+bool moveTributo(int altura, int largura, int **labirinto, int *tributo, NoPilha *caminho)
 {
     int dx[] = {-1, 0, 1, 0};
     int dy[] = {0, 1, 0, -1};
@@ -249,16 +189,16 @@ bool moveTributo(int altura, int largura, int **labirinto, int *tributo, no *cam
 
     for (int i = 0; i < 4; i++)
     {
-        int novo_x = tributo[0] + dx[i];
-        int novo_y = tributo[1] + dy[i];
+        int novoX = tributo[0] + dx[i];
+        int novoY = tributo[1] + dy[i];
 
-        if (novo_x >= 0 && novo_x < altura && novo_y >= 0 && novo_y < largura &&
-            labirinto[novo_x][novo_y] == 0)
+        if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura &&
+            labirinto[novoX][novoY] == 0) // Mover apenas para posições livres
         {
-            labirinto[tributo[0]][tributo[1]] = 0; // Libera a posição atual
-            tributo[0] = novo_x;
-            tributo[1] = novo_y;
-            labirinto[novo_x][novo_y] = 1; // Marca a nova posição do tributo
+            labirinto[tributo[0]][tributo[1]] = 5; // Marca a posição atual como visitada
+            tributo[0] = novoX;
+            tributo[1] = novoY;
+            labirinto[novoX][novoY] = 1; // Marca a nova posição do tributo
             empilha(caminho, tributo, direcoes[i]);
             return true;
         }
@@ -266,10 +206,10 @@ bool moveTributo(int altura, int largura, int **labirinto, int *tributo, no *cam
     return false; // Tributo não conseguiu se mover
 }
 
-void sairLab(int altura, int largura, int **labirinto, fila *posiTributo, fila *posiMonstros)
+void escaparLabirinto(int altura, int largura, int **labirinto, Fila *posicaoTributo, Fila *posicaoMonstros)
 {
-    int tributo[2] = {posiTributo->posi[0], posiTributo->posi[1]};
-    no *caminho = criaNo();
+    int tributo[2] = {posicaoTributo->posicaoNoLabirinto[0], posicaoTributo->posicaoNoLabirinto[1]};
+    NoPilha *caminho = criaNo();
 
     while (true)
     {
@@ -278,8 +218,8 @@ void sairLab(int altura, int largura, int **labirinto, fila *posiTributo, fila *
         if (tributo[0] == 0 || tributo[1] == largura - 1 || tributo[0] == altura - 1 || tributo[1] == 0)
         {
             printf("YES\n");
-            printf("%d\n", caminho->tam);
-            imprimeVoltaCaminho(caminho);
+            printf("%d\n", caminho->tamanho);
+            imprimeCaminho(caminho);
             return;
         }
 
@@ -293,15 +233,15 @@ void sairLab(int altura, int largura, int **labirinto, fila *posiTributo, fila *
         bool bestanteAlcancou = false;
 
         // Move todos os bestantes
-        fila *monstro_atual = posiMonstros;
-        while (monstro_atual != NULL)
+        Fila *monstroAtual = posicaoMonstros;
+        while (monstroAtual != NULL)
         {
-            if (moveBestante(altura, largura, labirinto, monstro_atual->posi, tributo))
+            if (moveBestante(altura, largura, labirinto, monstroAtual->posicaoNoLabirinto, tributo))
             {
                 bestanteAlcancou = true;
                 break;
             }
-            monstro_atual = monstro_atual->prox;
+            monstroAtual = monstroAtual->prox;
         }
 
         // Verifica se algum bestante alcançou o tributo
