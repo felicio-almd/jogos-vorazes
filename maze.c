@@ -273,6 +273,7 @@ void sairLab(int altura, int largura, int **labirinto, fila *posiTributo, fila *
 
     while (true)
     {
+        bool tributoMoveu = moveTributo(altura, largura, labirinto, tributo, caminho);
         // Verifica se o tributo chegou à borda
         if (tributo[0] == 0 || tributo[1] == largura - 1 || tributo[0] == altura - 1 || tributo[1] == 0)
         {
@@ -282,7 +283,13 @@ void sairLab(int altura, int largura, int **labirinto, fila *posiTributo, fila *
             return;
         }
 
-        bool tributoMoveu = moveTributo(altura, largura, labirinto, tributo, caminho);
+        // Se o tributo não conseguiu se mover e nenhum bestante o alcançou, não há solução
+        if (!tributoMoveu)
+        {
+            printf("NO\n");
+            return;
+        }
+
         bool bestanteAlcancou = false;
 
         // Move todos os bestantes
@@ -301,13 +308,6 @@ void sairLab(int altura, int largura, int **labirinto, fila *posiTributo, fila *
         if (bestanteAlcancou)
         {
             printf("You Died\n");
-            return;
-        }
-
-        // Se o tributo não conseguiu se mover e nenhum bestante o alcançou, não há solução
-        if (!tributoMoveu)
-        {
-            printf("NO\n");
             return;
         }
     }
