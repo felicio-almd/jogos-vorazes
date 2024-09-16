@@ -1,98 +1,42 @@
-#ifndef __MAZE_H__
-#define __MAZE_H__
+#ifndef MAZE_H
+#define MAZE_H
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
+#include <stdlib.h>
+#include <math.h>
+#include <stdbool.h>
 
-#define TAMANHO_MAX 1000
-
-/*
-    Nome da Estrutura: Posicao
-    Objetivo: Representa uma posição no labirinto
-    Campos:
-        x: um inteiro que a coordenada x (linha) da posição
-        y: um inteiro que a coordenada y (coluna) da posição
-*/
-typedef struct
+// Estruturas
+typedef struct no
 {
-    int x;
-    int y;
-} Posicao;
-
-/*
-    Nome da Estrutura: Labirinto
-    Objetivo: Representa o labirinto em 2 dimensões
-    Campos:
-        mapa: uma matriz bidimensional de caracteres que representa o mapa
-            do labirinto. Cada celula pode conter:
-            "." para chão
-            "#" para parede
-            "A" para posição inicial do tributo
-            "M" para um bestante (monstro)
-        altura: um inteiro que armazena a altura do labirinto
-        largura: um inteiro que armazena a largura do labirinto
-    obs: a constante TAMANHO_MAX (definida como 1000 no arquivo) determina o tamanho maximo do labirinto
-*/
-typedef struct labirinto
-{
-    char mapa[TAMANHO_MAX][TAMANHO_MAX];
-    int altura;
-    int largura;
-    Posicao posicaoInicial;
-    char visitado[TAMANHO_MAX][TAMANHO_MAX];
-} Labirinto;
-
-typedef struct pilha
-{
-    Posicao pilha[TAMANHO_MAX * TAMANHO_MAX];
-    int topo;
+    char direcao;
+    int coordenadasCaminho[2];
+    struct no *prox;
+    struct no *ant;
     int tamanho;
-} Pilha;
+} NoPilha;
 
-/*
-    Nome da função: carregarLabirinto
-    Parametro:
-        labirinto:(Ponteiro para uma estrutura labirinto da entrada)
-        linhas:(inteiro com o tamanho da altura do labirinto)
-        colunas:(inteiro com o tamanho da largura do labirinto)
+typedef struct fila
+{
+    int posicaoNoLabirinto[2];
+    struct fila *prox;
+} Fila;
 
-    Objetivo: Armazenar a altura e Largura do labirinto nos campos da estrutura
-              em seguida, ler o mapa do labirinto linha por linha e coloca-lo no campo mapa
-*/
-void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
+// Funções para manipulação de nós
+NoPilha *criaNo();
+void empilha(NoPilha *caminho, int posicao[2], char comando);
+void desempilha(NoPilha *caminho);
+void imprimeCaminho(NoPilha *caminho);
 
-// FAZER DOCUMENTAÇÃO DESSAS FUNÇÕES SE NECESSARIO
-void carregaLabirintoAleatorio(Labirinto *labirinto);
-void imprimeLabirinto(Labirinto *labirinto);
+// Funções para manipulação de filas
+Fila *criarFilaVazia();
+Fila *removerDaFila(Fila *fila);
+Fila *enfileirar(Fila *fila, int posicao[2]);
 
-// int existeSaida(Labirinto *labirinto);
-// int buscaEmProfundidade(Labirinto *labirinto, int x, int y);
-// int dentroDoLabirinto(Labirinto *labirinto, int x, int y);
-
-/*
-    Nome da função: existeCaminho
-    Parametro:
-        labirinto:(Ponteiro para uma estrutura labirinto da entrada)
-    Retorno: 1 se for possivel escapar(tem caminho), 0 se não tem caminho para escapar
-    Objetivo: A partir de um algoritmo de busca, verificar se tem o caminho para o tributo
-              sair do labirinto. Considera movimentos simultaneos do tributo e dos bestantes
-*/
-// int existeCaminho(Labirinto *labirinto, char *caminho, int *tamanhoCaminho);
-
-/*
-    Nome da função: imprimirCaminho
-    Parametro:
-        labirinto:(Ponteiro para uma estrutura labirinto da entrada)
-    Objetivo: Essa função deve encontrar o caminho de fuga e imprimir esse caminho válido.
-*/
-// void imprimirCaminho(Labirinto *labirinto);
-
-// Estrutura para a arvore (busca)
-// typedef struct no
-// {
-//     int chave;
-//     struct no *esq, *dir, *cima, *baixo;
-// } Tree;
-
-#endif
+// Funções principais do labirinto
+Fila *acharPosicao(int altura, int largura, int **labirinto, int M_A); // mudar esse M_A
+void escaparLabirinto(int altura, int largura, int **labirinto, Fila *posicaoTributo, Fila *posicaoBestante);
+int distanciaEntreOsPersonagens(int x1, int y1, int x2, int y2);
+bool moveBestante(int altura, int largura, int **labirinto, int *bestante, int *tributo);
+bool moveTributo(int altura, int largura, int **labirinto, int *tributo, NoPilha *caminho);
+#endif // MAZE_H

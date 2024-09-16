@@ -1,245 +1,286 @@
 #include "maze.h"
+#include <limits.h>
 
-// Iniciando o labirinto
-// FALTA FAZER
-// verificar sem tem A no labirinto
-// verificar sem tem 2 A no labirinto
-// verificar se o tamanho eh ideal  1 ≤ n, m ≤ 1000.
-// verificar se nao tem caraceteres errado
-/*void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas)
+NoPilha *criaNo()
 {
-    if (linhas < 1 || linhas > TAMANHO_MAX || colunas < 1 || colunas > TAMANHO_MAX)
+    NoPilha *novo;
+    novo = (NoPilha *)calloc(1, sizeof(NoPilha));
+    if (novo == NULL)
     {
-        printf("Erro: Dimensões do labirinto são inválidas.\n");
-        return;
+        printf("ERRO: problemas com a alocacao de memoria . \n");
+        exit(1);
     }
-    // armazena a altura e largura como quantidade de linhas e colunas
-    labirinto->altura = linhas;
-    labirinto->largura = colunas;
-    int i, j;
-    int contadorA = 0;
+    return novo;
+}
 
-    // le cada caractere
-    for (i = 0; i < labirinto->altura; i++)
+void empilha(NoPilha *caminho, int posicao[2], char comando)
+{
+    NoPilha *novo = criaNo();
+    novo->direcao = comando;
+    novo->coordenadasCaminho[0] = posicao[0]; // trocar esse v que porra é essa
+    novo->coordenadasCaminho[1] = posicao[1];
+    NoPilha *aux = caminho;
+    while (aux->prox != NULL)
     {
-        for (j = 0; j < labirinto->largura; j++)
-        {
-            scanf(" %c", &labirinto->mapa[i][j]);
-            if (labirinto->mapa[i][j] == 'A')
-            {
-                labirinto->posicaoInicial.x = i;
-                labirinto->posicaoInicial.y = j;
-                contadorA++;
+        aux = aux->prox;
+    }
+    aux->prox = novo;
+    novo->ant = aux;
+    caminho->tamanho++;
+}
 
-                if (labirinto->mapa[i][j] != 'A' && labirinto->mapa[i][j] != '.' && labirinto->mapa[i][j] != '#' && labirinto->mapa[i][j] != 'M')
+void desempilha(NoPilha *caminho)
+{
+    NoPilha *aux = caminho;
+    while (aux->prox != NULL)
+    {
+        aux = aux->prox;
+    }
+    aux->ant->prox = NULL;
+    caminho->tamanho--;
+    free(aux);
+}
+
+void imprimeCaminho(NoPilha *caminho)
+{
+    NoPilha *aux = caminho->prox;
+    if (aux == NULL)
+        return;
+    while (aux != NULL)
+    {
+        printf("%c", aux->direcao);
+        aux = aux->prox;
+    }
+    printf("\n");
+}
+
+Fila *criarFilaVazia()
+{
+    Fila *novo = (Fila *)calloc(1, sizeof(Fila));
+    if (novo == NULL)
+    {
+        printf("Erro de alocacao\n");
+        exit(1);
+    }
+    return novo;
+}
+
+Fila *enfileirar(Fila *fila, int posicao[2])
+{
+    Fila *novo = criarFilaVazia();
+    novo->posicaoNoLabirinto[0] = posicao[0];
+    novo->posicaoNoLabirinto[1] = posicao[1];
+    Fila *aux = fila;
+    if (fila == NULL)
+        return novo;
+    while (aux->prox != NULL)
+        aux = aux->prox;
+    aux->prox = novo;
+    return fila;
+}
+
+Fila *removeFila(Fila *fila)
+{
+    Fila *aux = fila;
+    fila = aux->prox;
+    free(aux);
+    return fila;
+}
+
+Fila *acharPosicao(int altura, int largura, int **labirinto, int M_A) // dnv esse M_A sla
+{
+    int posicao[2];
+    Fila *posicaoAtual = NULL;
+    if (M_A == 1)
+    {
+        for (int i = 0; i < altura; i++)
+        {
+            for (int j = 0; j < largura; j++)
+            {
+                if (labirinto[i][j] == M_A)
                 {
-                    printf("Erro: Caractere inválido '%c' encontrado no labirinto.\n", labirinto->mapa[i][j]);
-                    return;
+                    posicao[0] = i;
+                    posicao[1] = j;
+                    posicaoAtual = enfileirar(posicaoAtual, posicao);
                 }
             }
         }
-        if (contadorA == 0)
+        return posicaoAtual;
+    }
+    else
+    {
+        for (int i = 0; i < altura; i++)
         {
-            printf("Erro: Nenhum ponto inicial 'A' encontrado no labirinto.\n");
+            for (int j = 0; j < largura; j++)
+            {
+                if (labirinto[i][j] == M_A)
+                {
+                    if (i != 0 && i != altura - 1 && j != 0 && j != largura - 1)
+                    {
+                        if (labirinto[i + 1][j] == 0 || labirinto[i - 1][j] == 0 || labirinto[i][j + 1] == 0 || labirinto[i][j - 1] == 0)
+                        {
+                            posicao[0] = i;
+                            posicao[1] = j;
+                            posicaoAtual = enfileirar(posicaoAtual, posicao);
+                        }
+                    }
+                    else
+                    {
+                        posicao[0] = i;
+                        posicao[1] = j;
+                        posicaoAtual = enfileirar(posicaoAtual, posicao);
+                    }
+                }
+            }
         }
-        else if (contadorA > 1)
-        {
-            printf("Erro: Mais de um ponto inicial 'A' encontrado no labirinto.\n");
-        }
+        return posicaoAtual;
     }
 }
-*/
 
-// Função para preencher o labirinto com caracteres aleatórios
-void carregaLabirintoAleatorio(Labirinto *labirinto)
+int distanciaEntreOsPersonagens(int x1, int y1, int x2, int y2)
 {
-    int i, j;
+    return abs(x1 - x2) + abs(y1 - y2);
+}
 
-    // Inicializa o gerador de números aleatórios
-    srand(time(NULL));
+bool moveBestante(int altura, int largura, int **labirinto, int *bestante, int *tributo)
+{
+    int melhorX = bestante[0], melhorY = bestante[1];
+    int menorDistancia = distanciaEntreOsPersonagens(bestante[0], bestante[1], tributo[0], tributo[1]);
+    int novoX, novoY, novaDistancia;
 
-    // Preenche o labirinto com caracteres aleatórios, exceto 'A'
-    for (i = 0; i < labirinto->altura; i++)
+    int dx[] = {-1, 0, 1, 0};
+    int dy[] = {0, 1, 0, -1};
+
+    for (int i = 0; i < 4; i++)
     {
-        for (j = 0; j < labirinto->largura; j++)
-        {
-            int randChar = rand() % 3; // Gera um número aleatório entre 0 e 2
+        novoX = bestante[0] + dx[i];
+        novoY = bestante[1] + dy[i];
 
-            switch (randChar)
+        if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura &&
+            labirinto[novoX][novoY] != 3 && labirinto[novoX][novoY] != 5)
+        { // Não é parede e não foi visitado
+            novaDistancia = distanciaEntreOsPersonagens(novoX, novoY, tributo[0], tributo[1]);
+            if (novaDistancia < menorDistancia)
             {
-            case 0:
-                labirinto->mapa[i][j] = '.';
-                break;
-            case 1:
-                labirinto->mapa[i][j] = '#';
-                break;
-            case 2:
-                labirinto->mapa[i][j] = 'M';
-                break;
+                menorDistancia = novaDistancia;
+                melhorX = novoX;
+                melhorY = novoY;
             }
         }
     }
 
-    // Garante que há exatamente um 'A' no labirinto
-    int posX = rand() % labirinto->altura;
-    int posY = rand() % labirinto->largura;
-    labirinto->mapa[posX][posY] = 'A';
-    labirinto->posicaoInicial.x = posX;
-    labirinto->posicaoInicial.y = posY;
-}
-
-void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas)
-{
-    if (linhas < 1 || linhas > TAMANHO_MAX || colunas < 1 || colunas > TAMANHO_MAX)
+    if (melhorX == tributo[0] && melhorY == tributo[1])
     {
-        printf("Erro: Dimensões do labirinto são inválidas.\n");
-        return;
+        return true; // Bestante alcançou o tributo
     }
 
-    // Armazena a altura e largura
-    labirinto->altura = linhas;
-    labirinto->largura = colunas;
+    labirinto[bestante[0]][bestante[1]] = 0; // Libera a posição atual
+    bestante[0] = melhorX;
+    bestante[1] = melhorY;
+    labirinto[melhorX][melhorY] = 2; // Marca a nova posição do bestante
+    return false;
+}
 
-    // Preenche o labirinto com caracteres aleatórios
-    carregaLabirintoAleatorio(labirinto);
+bool moveTributo(int altura, int largura, int **labirinto, int *tributo, NoPilha *caminho)
+{
+    int dx[] = {-1, 0, 1, 0};
+    int dy[] = {0, 1, 0, -1};
+    char direcoes[] = {'U', 'R', 'D', 'L'};
+    int melhorDirecao = -1;
+    int menorRisco = INT_MAX;
 
-    // Valida os caracteres no labirinto
-    int i, j;
-    for (i = 0; i < labirinto->altura; i++)
+    for (int i = 0; i < 4; i++)
     {
-        for (j = 0; j < labirinto->largura; j++)
+        int novoX = tributo[0] + dx[i];
+        int novoY = tributo[1] + dy[i];
+
+        if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura &&
+            labirinto[novoX][novoY] == 0) // Mover apenas para posições livres
         {
-            if (labirinto->mapa[i][j] != '.' && labirinto->mapa[i][j] != '#' && labirinto->mapa[i][j] != 'A' && labirinto->mapa[i][j] != 'M')
+            int risco = 0;
+            // Verifica as células adjacentes para bestantes
+            for (int j = 0; j < 4; j++)
             {
-                printf("Erro: Caractere inválido '%c' encontrado no labirinto.\n", labirinto->mapa[i][j]);
-                return;
+                int checkX = novoX + dx[j];
+                int checkY = novoY + dy[j];
+                if (checkX >= 0 && checkX < altura && checkY >= 0 && checkY < largura)
+                {
+                    if (labirinto[checkX][checkY] == 2) // 2 representa um bestante
+                    {
+                        risco += 10; // Aumenta significativamente o risco se houver um bestante adjacente
+                    }
+                }
+            }
+
+            // Se esta direção tem menor risco, escolha-a
+            if (risco < menorRisco)
+            {
+                menorRisco = risco;
+                melhorDirecao = i;
             }
         }
     }
+
+    // Se encontrou uma direção válida, mova-se
+    if (melhorDirecao != -1)
+    {
+        int novoX = tributo[0] + dx[melhorDirecao];
+        int novoY = tributo[1] + dy[melhorDirecao];
+
+        labirinto[tributo[0]][tributo[1]] = 5; // Marca a posição atual como visitada
+        tributo[0] = novoX;
+        tributo[1] = novoY;
+        labirinto[novoX][novoY] = 1; // Marca a nova posição do tributo
+        empilha(caminho, tributo, direcoes[melhorDirecao]);
+        return true;
+    }
+
+    return false; // Tributo não conseguiu se mover
 }
 
-void imprimeLabirinto(Labirinto *labirinto)
+void escaparLabirinto(int altura, int largura, int **labirinto, Fila *posicaoTributo, Fila *posicaoMonstros)
 {
-    int i, j;
-    for (i = 0; i < labirinto->altura; i++)
+    int tributo[2] = {posicaoTributo->posicaoNoLabirinto[0], posicaoTributo->posicaoNoLabirinto[1]};
+    NoPilha *caminho = criaNo();
+
+    while (true)
     {
-        for (j = 0; j < labirinto->largura; j++)
+        bool tributoMoveu = moveTributo(altura, largura, labirinto, tributo, caminho);
+        // Verifica se o tributo chegou à borda
+        if (tributo[0] == 0 || tributo[1] == largura - 1 || tributo[0] == altura - 1 || tributo[1] == 0)
         {
-            printf("%c", labirinto->mapa[i][j]);
+            printf("YES\n");
+            printf("%d\n", caminho->tamanho);
+            imprimeCaminho(caminho);
+            return;
         }
-        printf("\n"); // Adiciona uma nova linha após cada linha do labirinto
+
+        // Se o tributo não conseguiu se mover e nenhum bestante o alcançou, não há solução
+        if (!tributoMoveu)
+        {
+            printf("NO\n");
+            return;
+        }
+
+        bool bestanteAlcancou = false;
+
+        // Move todos os bestantes
+        Fila *monstroAtual = posicaoMonstros;
+        while (monstroAtual != NULL)
+        {
+            if (moveBestante(altura, largura, labirinto, monstroAtual->posicaoNoLabirinto, tributo))
+            {
+                bestanteAlcancou = true;
+                break;
+            }
+            monstroAtual = monstroAtual->prox;
+        }
+
+        // Verifica se algum bestante alcançou o tributo
+        if (bestanteAlcancou)
+        {
+            printf("You Died\n");
+            return;
+        }
     }
 }
-
-// Inicializa a pilha
-void inicializaPilha(Pilha *p)
-{
-    p->topo = -1;
-}
-
-// Verifica se a pilha está vazia
-int pilhaVazia(Pilha *p)
-{
-    return p->topo == -1;
-}
-
-// Adiciona um item à pilha
-void empilha(Pilha *p, Posicao pos)
-{
-    if (p->topo < TAMANHO_MAX * TAMANHO_MAX - 1)
-    {
-        p->pilha[++p->topo] = pos;
-    }
-}
-
-// Remove e retorna o item do topo da pilha
-Posicao desempilha(Pilha *p)
-{
-    if (!pilhaVazia(p))
-    {
-        return p->pilha[p->topo--];
-    }
-    // Retorna uma posição inválida se a pilha estiver vazia
-    Posicao pos = {-1, -1};
-    return pos;
-}
-
-int movimento(Labirinto *labirinto)
-{
-}
-
-// Função da busca do caminho (busca em profundidade)
-// ou tem caminho
-// void existeCaminho(Labirinto *labirinto, char *caminho, int *tamanhoCaminho)
-// {
-//     // Implemente a lógica para verificar se o caminho é possível
-// }
-
-// int dentroDoLabirinto(Labirinto *labirinto, int x, int y)
-// {
-//     return (x >= 0 && x < labirinto->altura && y >= 0 && y < labirinto->largura);
-// }
-
-// // Função DFS recursiva
-// int buscaEmProfundidade(Labirinto *labirinto, int x, int y)
-// {
-//     if (!dentroDoLabirinto(labirinto, x, y) || labirinto->visitado[x][y] || labirinto->mapa[x][y] == '#')
-//     {
-//         return 0;
-//     }
-
-//     labirinto->visitado[x][y] = 1;
-
-//     // Se encontramos uma saída (ponto final), retorna verdadeiro
-//     if (labirinto->mapa[x][y] == 'A')
-//     {
-//         return 1;
-//     }
-
-//     // Explora as 4 direções (cima, baixo, esquerda, direita)
-//     int dx[] = {-1, 1, 0, 0};
-//     int dy[] = {0, 0, -1, 1};
-
-//     for (int i = 0; i < 4; i++)
-//     {
-//         int novoX = x + dx[i];
-//         int novoY = y + dy[i];
-
-//         if (buscaEmProfundidade(labirinto, novoX, novoY))
-//         {
-//             return 1;
-//         }
-//     }
-
-//     // Retorna falso se não encontrou a saída
-//     return 0;
-// }
-
-// // Função para iniciar a busca e verificar se há uma saída
-// int existeSaida(Labirinto *labirinto)
-// {
-//     // Inicializa a matriz de visitado
-//     for (int i = 0; i < labirinto->altura; i++)
-//     {
-//         for (int j = 0; j < labirinto->largura; j++)
-//         {
-//             labirinto->visitado[i][j] = 0;
-//         }
-//     }
-
-//     // Inicia a busca a partir da posição inicial 'A'
-//     return buscaEmProfundidade(labirinto, labirinto->posicaoInicial.x, labirinto->posicaoInicial.y);
-// }
-
-// Função que imprime a saída desejada
-// void imprimirSolucao(int tamanhoCaminho, char *caminho)
-// {
-//     if (tamanhoCaminho > 0)
-//     {
-//         printf("YES\n%d\n%s\n", tamanhoCaminho, caminho);
-//     }
-//     else
-//     {
-//         printf("NO\n");
-//     }
-// }
