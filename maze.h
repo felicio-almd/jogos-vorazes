@@ -1,53 +1,44 @@
-#ifndef __MAZE_H__
-#define __MAZE_H__
+#ifndef MAZE_H
+#define MAZE_H
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <string.h>
+#include <math.h>
+#include <stdbool.h>
 
-#define TAMANHO_MAX 1000
-
-typedef struct
+// Estruturas
+typedef struct No
 {
-    int x, y;
-} Posicao;
+    char direcao;
+    int v[2];
+    struct No *prox;
+    struct No *ant;
+    int tam;
+} no;
 
-typedef struct
+typedef struct Fila
 {
-    char mapa[TAMANHO_MAX][TAMANHO_MAX];
-    int altura, largura;
-    Posicao posicaoInicial;
-} Labirinto;
+    int posi[2];
+    struct Fila *prox;
+} fila;
 
-typedef struct
-{
-    Posicao *pilha;
-    int topo;
-    int tamanho_maximo;
-    char *movimentos;
-} Pilha;
+// Funções para manipulação de nós
+no *criaNo();
+void empilha(no *Caminho, int posicao[2], char comando);
+void desempilha(no *caminho);
+void imprimeCaminho(no *Caminho);
+void imprimeVoltaCaminho(no *caminho);
 
-typedef struct {
-    Posicao posicao;
-} Monstro;
+// Funções para manipulação de filas
+fila *criaFila();
+fila *removeFila(fila *fila);
+fila *addFila(fila *fila, int posicao[2]);
 
-
-void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
-void carregaLabirintoAleatorio(Labirinto *labirinto);
-void imprimeLabirinto(Labirinto *labirinto);
-
-void inicializarPilha(Pilha *pilha, int tamanho_maximo);
-int pilhaVazia(Pilha *pilha);
-void empilhar(Pilha *pilha, Posicao pos, char movimento);
-void imprimirPilha(Pilha *pilha);
-void desalocarPilha(Pilha *pilha);
-Posicao desempilhar(Pilha *pilha);
-// int existeSaida(Labirinto *labirinto, char direcao);
-int encontrarCaminho(Labirinto *labirinto, Posicao posicaoAtual, Pilha *caminho, Monstro *monstro);
-
-
-void inicializarMonstro(Labirinto *labirinto, Monstro *monstro);
-void moverMonstro(Labirinto *labirinto, Monstro *monstro);
-
-#endif
+// Funções principais do labirinto
+fila *achaposicao(int altura, int largura, int **labirinto, int M_A);
+void voltaCaminho(int altura, int largura, int **labirinto, int inicial[2], int final[2]);
+void sairLab(int altura, int largura, int **labirinto, fila *posiTributo, fila *posiMonstros);
+int distancia(int x1, int y1, int x2, int y2);
+bool moveBestante(int altura, int largura, int **labirinto, int *bestante, int *tributo);
+bool moveTributo(int altura, int largura, int **labirinto, int *tributo, no *caminho);
+#endif // MAZE_H
