@@ -1,5 +1,4 @@
 #include "maze.h"
-#include <limits.h>
 
 NoPilha *criaNo()
 {
@@ -187,37 +186,21 @@ bool moveTributo(int altura, int largura, int **labirinto, int *tributo, NoPilha
     int dy[] = {0, 1, 0, -1};
     char direcoes[] = {'U', 'R', 'D', 'L'};
     int melhorDirecao = -1;
-    int menorRisco = INT_MAX;
+
+    // Vamos priorizar movimentos para baixo ('D') primeiro, depois explorar outras direções
+    int ordemDirecoes[] = {2, 1, 0, 3}; // Prioridades: Down (2), Right (1), Up (0), Left (3)
 
     for (int i = 0; i < 4; i++)
     {
-        int novoX = tributo[0] + dx[i];
-        int novoY = tributo[1] + dy[i];
+        int novaDirecao = ordemDirecoes[i]; // Testa a direção com base na ordem de prioridade
+        int novoX = tributo[0] + dx[novaDirecao];
+        int novoY = tributo[1] + dy[novaDirecao];
 
         if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura &&
             labirinto[novoX][novoY] == 0) // Mover apenas para posições livres
         {
-            int risco = 0;
-            // Verifica as células adjacentes para bestantes
-            for (int j = 0; j < 4; j++)
-            {
-                int checkX = novoX + dx[j];
-                int checkY = novoY + dy[j];
-                if (checkX >= 0 && checkX < altura && checkY >= 0 && checkY < largura)
-                {
-                    if (labirinto[checkX][checkY] == 2) // 2 representa um bestante
-                    {
-                        risco += 10; // Aumenta significativamente o risco se houver um bestante adjacente
-                    }
-                }
-            }
-
-            // Se esta direção tem menor risco, escolha-a
-            if (risco < menorRisco)
-            {
-                menorRisco = risco;
-                melhorDirecao = i;
-            }
+            melhorDirecao = novaDirecao;
+            break; // Encontra a primeira direção válida e sai do loop
         }
     }
 
