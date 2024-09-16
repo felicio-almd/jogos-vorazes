@@ -1,5 +1,4 @@
 #include "maze.h"
-#include <stdbool.h>
 
 NoPilha *criaNo()
 {
@@ -17,8 +16,8 @@ void empilha(NoPilha *caminho, int posicao[2], char comando)
 {
     NoPilha *novo = criaNo();
     novo->direcao = comando;
-    novo->v[0] = posicao[0]; // trocar esse v que porra é essa
-    novo->v[1] = posicao[1];
+    novo->coordenadasCaminho[0] = posicao[0]; // trocar esse v que porra é essa
+    novo->coordenadasCaminho[1] = posicao[1];
     NoPilha *aux = caminho;
     while (aux->prox != NULL)
     {
@@ -41,9 +40,9 @@ void desempilha(NoPilha *caminho)
     free(aux);
 }
 
-void imprimeCaminho(NoPilha *Caminho)
+void imprimeCaminho(NoPilha *caminho)
 {
-    NoPilha *aux = Caminho->prox;
+    NoPilha *aux = caminho;
     if (aux == NULL)
         return;
     while (aux->prox != NULL)

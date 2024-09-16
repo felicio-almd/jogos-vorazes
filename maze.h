@@ -10,7 +10,7 @@
 typedef struct no
 {
     char direcao;
-    int v[2]; // para que serve?
+    int coordenadasCaminho[2];
     struct no *prox;
     struct no *ant;
     int tamanho;
