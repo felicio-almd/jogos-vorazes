@@ -1,5 +1,4 @@
 #include "maze.h"
-
 int main()
 {
     int altura, largura;
@@ -79,22 +78,25 @@ int main()
         return 0;
     }
 
-    if (posicaoTributo->posicaoNoLabirinto[0] == 0 || posicaoTributo->posicaoNoLabirinto[1] == largura - 1 || posicaoTributo->posicaoNoLabirinto[0] == altura - 1 || posicaoTributo->posicaoNoLabirinto[1] == 0)
+    Fila *posicaoBestantes = acharPosicaoAtual(2, altura, largura, labirintoComNumeros);
+
+    Fila *novaFilaBestantes = NULL;
+    NoPilha *caminho = (NoPilha *)calloc(1, sizeof(NoPilha));
+
+    if (caminho == NULL)
+    {
+        printf("Erro de alocacao de memoria.\n");
+        exit(1);
+    }
+    if (encontrarSaidaRecursiva(labirintoComNumeros, altura, largura, posicaoTributo->posicaoNoLabirinto[0], posicaoTributo->posicaoNoLabirinto[1], caminho, posicaoBestantes, &novaFilaBestantes))
     {
         printf("YES\n");
-        printf("0\n");
-        for (int i = 0; i < altura; i++)
-        {
-            free(labirintoComNumeros[i]);
-        }
-        free(labirintoComNumeros);
-        free(labirinto);
-        free(posicaoTributo);
-        return 0;
+        imprimeCaminho(caminho);
     }
-
-    Fila *posicaoBestantes = acharPosicaoAtual(2, altura, largura, labirintoComNumeros);
-    encontrarSaidaLabirinto(labirintoComNumeros, altura, largura, posicaoTributo, posicaoBestantes);
+    else
+    {
+        printf("NO\n");
+    }
 
     for (int i = 0; i < altura; i++)
     {

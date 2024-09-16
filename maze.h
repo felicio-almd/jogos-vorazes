@@ -32,8 +32,7 @@ Fila *enfileira(Fila *fila, int posicao[2]);
 // Funções principais do labirinto
 Fila *acharPosicaoAtual(int tipoEntidade, int altura, int largura, int **labirinto);
 void voltaCaminho(int altura, int largura, int **labirinto, int posicaoInicial[2], int posicaoFinal[2], NoPilha *caminho);
-void processarMovimentosTributo(int **labirinto, Fila *posicaoTributo, Fila **aux);
-void processarMovimentosBestante(int **labirinto, int altura, int largura, Fila *posicaoBestante, Fila **aux);
-void encontrarSaidaLabirinto(int **labirinto, int altura, int largura, Fila *posiTributo, Fila *posiMonstros);
+int moverBestantesRecursivo(int **labirinto, int altura, int largura, Fila *bestantes, Fila **novaFila);
+int encontrarSaidaRecursiva(int **labirinto, int altura, int largura, int x, int y, NoPilha *caminho, Fila *bestantes, Fila **novaFila);
 
 #endif // MAZE_H
