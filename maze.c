@@ -249,43 +249,22 @@ int encontrarSaidaRecursiva(int **labirinto, int altura, int largura, int x, int
     // Atualiza posições dos bestantes
     moverBestantesRecursivo(labirinto, altura, largura, bestantes, novaFila);
 
-    // Movimenta para cima
-    if (x > 0 && labirinto[x - 1][y] == 0)
-    {
-        if (encontrarSaidaRecursiva(labirinto, altura, largura, x - 1, y, caminho, *novaFila, novaFila))
-        {
-            empilha(caminho, (int[]){x - 1, y}, 'U'); // Cima
-            return 1;
-        }
-    }
+    int dx[] = {1, 0, -1, 0}; // Mudança na ordem: primeiro para baixo
+    int dy[] = {0, 1, 0, -1};
+    char direcoes[] = {'D', 'R', 'U', 'L'}; // Adaptado para a nova ordem
 
-    // Movimenta para direita
-    if (y < largura - 1 && labirinto[x][y + 1] == 0)
+    for (int i = 0; i < 4; i++)
     {
-        if (encontrarSaidaRecursiva(labirinto, altura, largura, x, y + 1, caminho, *novaFila, novaFila))
-        {
-            empilha(caminho, (int[]){x, y + 1}, 'R'); // Direita
-            return 1;
-        }
-    }
+        int novoX = x + dx[i];
+        int novoY = y + dy[i];
 
-    // Movimenta para baixo
-    if (x < altura - 1 && labirinto[x + 1][y] == 0)
-    {
-        if (encontrarSaidaRecursiva(labirinto, altura, largura, x + 1, y, caminho, *novaFila, novaFila))
+        if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura && labirinto[novoX][novoY] == 0)
         {
-            empilha(caminho, (int[]){x + 1, y}, 'D'); // Baixo
-            return 1;
-        }
-    }
-
-    // Movimenta para esquerda
-    if (y > 0 && labirinto[x][y - 1] == 0)
-    {
-        if (encontrarSaidaRecursiva(labirinto, altura, largura, x, y - 1, caminho, *novaFila, novaFila))
-        {
-            empilha(caminho, (int[]){x, y - 1}, 'L'); // Esquerda
-            return 1;
+            if (encontrarSaidaRecursiva(labirinto, altura, largura, novoX, novoY, caminho, *novaFila, novaFila))
+            {
+                empilha(caminho, (int[]){novoX, novoY}, direcoes[i]);
+                return 1;
+            }
         }
     }
 
