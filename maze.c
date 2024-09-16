@@ -42,10 +42,10 @@ void desempilha(NoPilha *caminho)
 
 void imprimeCaminho(NoPilha *caminho)
 {
-    NoPilha *aux = caminho;
+    NoPilha *aux = caminho->prox;
     if (aux == NULL)
         return;
-    while (aux->prox != NULL)
+    while (aux != NULL)
     {
         printf("%c", aux->direcao);
         aux = aux->prox;
