@@ -3,73 +3,40 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <math.h>
 #include <stdbool.h>
 
-#define TAMANHO_MAX 1000
-
-typedef struct
+// Estruturas
+typedef struct no
 {
-    int x, y;
-} Posicao;
+    char direcao;
+    int v[2]; // para que serve?
+    struct no *prox;
+    struct no *ant;
+    int tamanho;
+} NoPilha;
 
-typedef struct monstros
+typedef struct fila
 {
-    Posicao posicao;
-} Monstro;
+    int posicaoNoLabirinto[2];
+    struct fila *prox;
+} Fila;
 
-typedef struct
-{
-    char mapa[TAMANHO_MAX][TAMANHO_MAX];
-    int altura, largura;
-    Posicao posicaoInicial;
-    Monstro monstros[TAMANHO_MAX];
-    int numMonstros;
-} Labirinto;
+// Funções para manipulação de nós
+NoPilha *criaNo();
+void empilha(NoPilha *caminho, int posicao[2], char comando);
+void desempilha(NoPilha *caminho);
+void imprimeCaminho(NoPilha *caminho);
 
-typedef struct
-{
-    Posicao *pilha;
-    int topo;
-    int tamanho_maximo;
-    char *movimentos;
-} Pilha;
+// Funções para manipulação de filas
+Fila *criarFilaVazia();
+Fila *removerDaFila(Fila *fila);
+Fila *enfileirar(Fila *fila, int posicao[2]);
 
-// Nova estrutura para a fila
-typedef struct
-{
-    Posicao *items;
-    int front;
-    int rear;
-    int size;
-} Queue;
-
-typedef struct
-{
-    int x, y;
-    int distance;
-} QueueItem;
-
-// Funções existentes
-void carregarLabirinto(Labirinto *labirinto, int linhas, int colunas);
-void imprimeLabirinto(Labirinto *labirinto);
-
-void inicializarPilha(Pilha *pilha, int tamanho_maximo);
-int pilhaVazia(Pilha *pilha);
-void empilhar(Pilha *pilha, Posicao pos, char movimento);
-Posicao desempilhar(Pilha *pilha);
-void imprimirPilha(Pilha *pilha);
-void desalocarPilha(Pilha *pilha);
-
-// Novas funções para a fila
-void initializeQueue(Queue *q, int maxSize);
-int isQueueEmpty(Queue *q);
-void enqueue(Queue *q, Posicao value);
-Posicao dequeue(Queue *q);
-
-void inicializarMonstros(Labirinto *labirinto);
-int resolverLabirintoComMonstros(Labirinto *labirinto);
-
-void resolverLabirinto(Labirinto *labirinto);
-
-#endif
+// Funções principais do labirinto
+Fila *acharPosicao(int altura, int largura, int **labirinto, int M_A); // mudar esse M_A
+void escaparLabirinto(int altura, int largura, int **labirinto, Fila *posicaoTributo, Fila *posicaoBestante);
+int distanciaEntreOsPersonagens(int x1, int y1, int x2, int y2);
+bool moveBestante(int altura, int largura, int **labirinto, int *bestante, int *tributo);
+bool moveTributo(int altura, int largura, int **labirinto, int *tributo, NoPilha *caminho);
+#endif // MAZE_H
