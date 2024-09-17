@@ -42,6 +42,8 @@ int main()
         }
     }
 
+    // le o labirinto e transforma os caracteres em numeros para que fique mais facil
+    // trabalhar pois números são mais fáceis e rápidos de comparar e manipular.
     for (int i = 0; i < altura; i++)
     {
         scanf("%s", labirinto);
@@ -66,6 +68,7 @@ int main()
         }
     }
 
+    // Encontra as posições dos tributos no labirinto
     Fila *posicaoTributo = acharPosicao(altura, largura, labirintoComNumeros, 1);
     if (posicaoTributo == NULL)
     {
@@ -79,6 +82,7 @@ int main()
         return 0;
     }
 
+    // caso ja se inicie na borda, encerra o programa sem passos dados
     if (posicaoTributo->posicaoNoLabirinto[0] == 0 || posicaoTributo->posicaoNoLabirinto[1] == largura - 1 || posicaoTributo->posicaoNoLabirinto[0] == altura - 1 || posicaoTributo->posicaoNoLabirinto[1] == 0)
     {
         printf("YES\n");
@@ -93,10 +97,11 @@ int main()
         return 0;
     }
 
-    Fila *posicaoMonstros = acharPosicao(altura, largura, labirintoComNumeros, 2);
-    escaparLabirinto(altura, largura, labirintoComNumeros, posicaoTributo, posicaoMonstros);
+    // Encontra as posições dos bestantes no labirinto
+    Fila *posicaoBestantes = acharPosicao(altura, largura, labirintoComNumeros, 2);
+    escaparLabirinto(altura, largura, labirintoComNumeros, posicaoTributo, posicaoBestantes);
 
-    // Liberação de memoria
+    // libera a memoria
     for (int i = 0; i < altura; i++)
     {
         free(labirintoComNumeros[i]);
