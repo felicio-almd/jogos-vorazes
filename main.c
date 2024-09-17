@@ -1,4 +1,6 @@
 #include "maze.h"
+
+// FUNCAO MAIN PRONTA
 int main()
 {
     int altura, largura;
