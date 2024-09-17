@@ -87,7 +87,7 @@ int main()
         printf("Erro de alocacao de memoria.\n");
         exit(1);
     }
-    if (encontrarSaidaRecursiva(labirintoComNumeros, altura, largura, posicaoTributo->posicaoNoLabirinto[0], posicaoTributo->posicaoNoLabirinto[1], caminho, posicaoBestantes, &novaFilaBestantes))
+    if (encontrarSaida(labirintoComNumeros, altura, largura, posicaoTributo->posicaoNoLabirinto[0], posicaoTributo->posicaoNoLabirinto[1], caminho, posicaoBestantes, &novaFilaBestantes))
     {
         printf("YES\n");
         imprimeCaminho(caminho);

@@ -1,5 +1,6 @@
 #include "maze.h"
 
+// guardar a ultima posicao caminhada
 void empilha(NoPilha *caminho, int posicaoNoMapa[2], char comando)
 {
     NoPilha *novo = (NoPilha *)calloc(1, sizeof(NoPilha));
@@ -11,6 +12,7 @@ void empilha(NoPilha *caminho, int posicaoNoMapa[2], char comando)
         exit(1);
     }
 
+    // definir a direção e coordenadas do novo nó
     novo->direcao = comando;
     novo->coordenadasCaminho[0] = posicaoNoMapa[0];
     novo->coordenadasCaminho[1] = posicaoNoMapa[1];
@@ -24,6 +26,7 @@ void empilha(NoPilha *caminho, int posicaoNoMapa[2], char comando)
     novo->ant = aux;
 }
 
+// retirar a ultima posicao caminhada
 void desempilha(NoPilha *caminho)
 {
     NoPilha *aux = caminho;
@@ -36,6 +39,11 @@ void desempilha(NoPilha *caminho)
     free(aux);
 }
 
+// funcao para imprimir o caminho feito pelo tributo
+// Ao empilhar direções em uma pilha durante um labirinto, a última direção empilhada é a mais recente na sequência de movimentos.
+// Para imprimir o caminho completo da navegação em ordem correta (da primeira direção tomada até a última),
+// é necessário percorrer a pilha do topo (último elemento empilhado) até o fundo (primeiro elemento empilhado).
+// por isso a pilha percorre até o ultimo nó e imprime o contrário
 void imprimeCaminho(NoPilha *caminho)
 {
     NoPilha *aux = caminho->prox;
@@ -59,7 +67,7 @@ Fila *enfileira(Fila *posicaoNova, int posicao[2])
     Fila *novo = (Fila *)calloc(1, sizeof(Fila));
     if (novo == NULL)
     {
-        printf("Erro de alocacao\n");
+        printf("Erro de alocacao de memoria\n");
         exit(1);
     }
 
@@ -133,7 +141,7 @@ Fila *acharPosicaoAtual(int tipoEntidade, int altura, int largura, int **labirin
     }
 }
 
-int moverBestantesRecursivo(int **labirinto, int altura, int largura, Fila *bestantes, Fila **novaFila)
+int moverBestantes(int **labirinto, int altura, int largura, Fila *bestantes, Fila **novaFila)
 {
     if (bestantes == NULL)
     {
@@ -147,28 +155,28 @@ int moverBestantesRecursivo(int **labirinto, int altura, int largura, Fila *best
         int x = bestantes->posicaoNoLabirinto[0];
         int y = bestantes->posicaoNoLabirinto[1];
 
-        // Movimenta para cima
+        // movimento para cima
         if (x > 0 && labirinto[x - 1][y] == 0)
         {
             labirinto[x - 1][y] = 3;
             aux = enfileira(aux, (int[]){x - 1, y});
         }
 
-        // Movimenta para direita
+        // movimento para direita
         if (y < largura - 1 && labirinto[x][y + 1] == 0)
         {
             labirinto[x][y + 1] = 3;
             aux = enfileira(aux, (int[]){x, y + 1});
         }
 
-        // Movimenta para baixo
+        // movimento para baixo
         if (x < altura - 1 && labirinto[x + 1][y] == 0)
         {
             labirinto[x + 1][y] = 3;
             aux = enfileira(aux, (int[]){x + 1, y});
         }
 
-        // Movimenta para esquerda
+        // movimento para esquerda
         if (y > 0 && labirinto[x][y - 1] == 0)
         {
             labirinto[x][y - 1] = 3;
@@ -182,25 +190,24 @@ int moverBestantesRecursivo(int **labirinto, int altura, int largura, Fila *best
     return 1;
 }
 
-int encontrarSaidaRecursiva(int **labirinto, int altura, int largura, int x, int y, NoPilha *caminho, Fila *bestantes, Fila **novaFila)
+int encontrarSaida(int **labirinto, int altura, int largura, int x, int y, NoPilha *caminho, Fila *bestantes, Fila **novaFila)
 {
     // Verifica se a posição atual é uma borda do labirinto (saída)
     if (x == 0 || y == 0 || x == altura - 1 || y == largura - 1)
     {
-        empilha(caminho, (int[]){x, y}, '\0'); // Marca saída
-        return 1;                              // Encontrou saída
+        empilha(caminho, (int[]){x, y}, '\0'); // marcou a saida o "\0" significa caractere NULO
+        return 1;
     }
 
     // Marca a posição atual como visitada (1)
     labirinto[x][y] = 1;
     empilha(caminho, (int[]){x, y}, '\0'); // Marca visita
 
-    // Atualiza posições dos bestantes
-    moverBestantesRecursivo(labirinto, altura, largura, bestantes, novaFila);
+    moverBestantes(labirinto, altura, largura, bestantes, novaFila);
 
-    int dx[] = {1, 0, -1, 0}; // Mudança na ordem: primeiro para baixo
+    int dx[] = {1, 0, -1, 0}; // ordem de verificação começa de baixo e faz
     int dy[] = {0, 1, 0, -1};
-    char direcoes[] = {'D', 'R', 'U', 'L'}; // Adaptado para a nova ordem
+    char direcoes[] = {'D', 'R', 'U', 'L'};
 
     for (int i = 0; i < 4; i++)
     {
@@ -209,7 +216,7 @@ int encontrarSaidaRecursiva(int **labirinto, int altura, int largura, int x, int
 
         if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura && labirinto[novoX][novoY] == 0)
         {
-            if (encontrarSaidaRecursiva(labirinto, altura, largura, novoX, novoY, caminho, *novaFila, novaFila))
+            if (encontrarSaida(labirinto, altura, largura, novoX, novoY, caminho, *novaFila, novaFila))
             {
                 empilha(caminho, (int[]){novoX, novoY}, direcoes[i]);
                 caminho->tamanho++;
@@ -218,7 +225,7 @@ int encontrarSaidaRecursiva(int **labirinto, int altura, int largura, int x, int
         }
     }
 
-    // Se nenhuma direção for válida, desempilha e retrocede (backtracking)
+    // se nenhuma direção for válida, desempilha e retrocede a posição
     if (caminho->tamanho > 0)
         desempilha(caminho);
     return 0;
