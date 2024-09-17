@@ -46,9 +46,9 @@ Se não for possível encontrar um caminho, imprime "NO".
 O código utiliza estruturas de dados como pilhas (para armazenar o caminho) e filas (para gerenciar as posições dos bestantes), implementando funções para manipular essas estruturas e realizar a busca no labirinto.
 
 ## :sparkles: Funcionalidades ##
-:heavy_check_mark: Leitura e processamento de labirintos;
-:heavy_check_mark: Busca de caminho para a saída do labirinto;
-:heavy_check_mark: Movimentação de bestantes no labirinto;
+:heavy_check_mark: Leitura e processamento de labirintos;\
+:heavy_check_mark: Busca de caminho para a saída do labirinto;\
+:heavy_check_mark: Movimentação de bestantes no labirinto;\
 :heavy_check_mark: Impressão do caminho encontrado.
 
 ## :rocket: Tecnologias ##
