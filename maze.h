@@ -121,7 +121,7 @@ int moverBestantes(int **labirinto, int altura, int largura, Fila *bestantes, Fi
         caminho: (Ponteiro para a pilha que armazenará o caminho percorrido)
         bestantes: (Ponteiro para a fila contendo as posições dos bestantes)
         novaFila: (Ponteiro para a fila que armazenará as novas posições dos bestantes)
-    Objetivo: Realiza a busca recursiva pela saída do labirinto para o tributo, enquanto os bestantes se movimentam.
+    Objetivo: Realiza a busca pela saída do labirinto para o tributo, enquanto os bestantes se movimentam.
     Retorna um valor inteiro indicando o status da busca.
 */
 int encontrarSaida(int **labirinto, int altura, int largura, int x, int y, NoPilha *caminho, Fila *bestantes, Fila **novaFila);
