@@ -22,7 +22,9 @@ void empilha(NoPilha *caminho, int posicaoNoMapa[2], char comando)
 
     aux->prox = novo;
     novo->ant = aux;
-    caminho->tamanho++;
+
+    if (comando != '\0' && caminho->tamanho > 0)
+        caminho->tamanho++;
 }
 
 void desempilha(NoPilha *caminho)
@@ -39,13 +41,14 @@ void desempilha(NoPilha *caminho)
 
 void imprimeCaminho(NoPilha *caminho)
 {
-    NoPilha *aux = caminho->prox; // Start from the first actual node, not the dummy head
+    NoPilha *aux = caminho->prox;
     if (aux == NULL)
         return;
     while (aux->prox != NULL)
     {
         aux = aux->prox;
     }
+    printf("%d\n", abs(caminho->tamanho) - 1);
     while (aux != caminho)
     {
         printf("%c", aux->direcao);
@@ -133,57 +136,6 @@ Fila *acharPosicaoAtual(int tipoEntidade, int altura, int largura, int **labirin
     }
 }
 
-// void voltaCaminho(int altura, int largura, int **labirinto, int posicaoInicial[2], int posicaoFinal[2], NoPilha *caminho)
-// {
-//     // Vetor de possíveis direções (cima, direita, baixo, esquerda)
-//     int direcoes[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-//     char direcaoCorrespondente[4] = {'D', 'L', 'U', 'R'}; // Direções opostas (cima->baixo, direita->esquerda)
-
-//     if (posicaoFinal[0] == posicaoInicial[0] && posicaoFinal[1] == posicaoInicial[1])
-//     {
-//         printf("YES\n");
-//         printf("%d\n", caminho->tamanho);
-//         imprimeCaminho(caminho);
-//         return;
-//     }
-
-//     // Iterar pelas possíveis direções
-//     for (int i = 0; i < 4; i++)
-//     {
-//         int novaLinha = posicaoFinal[0] + direcoes[i][0];
-//         int novaColuna = posicaoFinal[1] + direcoes[i][1];
-
-//         // Verificar se a nova posição está dentro dos limites e se é válida (labirinto == 1)
-//         if (novaLinha >= 0 && novaLinha < altura && novaColuna >= 0 && novaColuna < largura && labirinto[novaLinha][novaColuna] == 1)
-//         {
-//             labirinto[posicaoFinal[0]][posicaoFinal[1]] = 4; // Marcar como visitado
-//             posicaoFinal[0] = novaLinha;
-//             posicaoFinal[1] = novaColuna;
-//             empilha(caminho, posicaoFinal, direcaoCorrespondente[i]); // Adicionar direção à pilha
-//             voltaCaminho(altura, largura, labirinto, posicaoInicial, posicaoFinal, caminho);
-//             return;
-//         }
-//     }
-
-//     // Se não encontrar nenhuma direção válida, voltar (desempilhar)
-//     for (int i = 0; i < 4; i++)
-//     {
-//         int novaLinha = posicaoFinal[0] + direcoes[i][0];
-//         int novaColuna = posicaoFinal[1] + direcoes[i][1];
-
-//         // Verificar se a nova posição é um caminho visitado (labirinto == 4)
-//         if (novaLinha >= 0 && novaLinha < altura && novaColuna >= 0 && novaColuna < largura && labirinto[novaLinha][novaColuna] == 4)
-//         {
-//             labirinto[posicaoFinal[0]][posicaoFinal[1]] = 3;
-//             posicaoFinal[0] = novaLinha;
-//             posicaoFinal[1] = novaColuna;
-//             desempilha(caminho);
-//             voltaCaminho(altura, largura, labirinto, posicaoInicial, posicaoFinal, caminho);
-//             return;
-//         }
-//     }
-// }
-
 int moverBestantesRecursivo(int **labirinto, int altura, int largura, Fila *bestantes, Fila **novaFila)
 {
     if (bestantes == NULL)
@@ -238,13 +190,13 @@ int encontrarSaidaRecursiva(int **labirinto, int altura, int largura, int x, int
     // Verifica se a posição atual é uma borda do labirinto (saída)
     if (x == 0 || y == 0 || x == altura - 1 || y == largura - 1)
     {
-        empilha(caminho, (int[]){x, y}, 'S'); // Marca saída
-        return 1;                             // Encontrou saída
+        empilha(caminho, (int[]){x, y}, '\0'); // Marca saída
+        return 1;                              // Encontrou saída
     }
 
     // Marca a posição atual como visitada (1)
     labirinto[x][y] = 1;
-    empilha(caminho, (int[]){x, y}, 'V'); // Marca visita
+    empilha(caminho, (int[]){x, y}, '\0'); // Marca visita
 
     // Atualiza posições dos bestantes
     moverBestantesRecursivo(labirinto, altura, largura, bestantes, novaFila);

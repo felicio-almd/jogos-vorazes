@@ -82,7 +82,6 @@ int main()
 
     Fila *novaFilaBestantes = NULL;
     NoPilha *caminho = (NoPilha *)calloc(1, sizeof(NoPilha));
-
     if (caminho == NULL)
     {
         printf("Erro de alocacao de memoria.\n");
