@@ -22,9 +22,6 @@ void empilha(NoPilha *caminho, int posicaoNoMapa[2], char comando)
 
     aux->prox = novo;
     novo->ant = aux;
-
-    if (comando != '\0' && caminho->tamanho > 0)
-        caminho->tamanho++;
 }
 
 void desempilha(NoPilha *caminho)
@@ -48,7 +45,7 @@ void imprimeCaminho(NoPilha *caminho)
     {
         aux = aux->prox;
     }
-    printf("%d\n", abs(caminho->tamanho) - 1);
+    printf("%d\n", caminho->tamanho);
     while (aux != caminho)
     {
         printf("%c", aux->direcao);
@@ -215,12 +212,14 @@ int encontrarSaidaRecursiva(int **labirinto, int altura, int largura, int x, int
             if (encontrarSaidaRecursiva(labirinto, altura, largura, novoX, novoY, caminho, *novaFila, novaFila))
             {
                 empilha(caminho, (int[]){novoX, novoY}, direcoes[i]);
+                caminho->tamanho++;
                 return 1;
             }
         }
     }
 
     // Se nenhuma direção for válida, desempilha e retrocede (backtracking)
-    desempilha(caminho);
+    if (caminho->tamanho > 0)
+        desempilha(caminho);
     return 0;
 }
