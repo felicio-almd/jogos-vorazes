@@ -1,4 +1,5 @@
 #include "maze.h"
+
 // FUNCAO MAIN PRONTA
 int main()
 {

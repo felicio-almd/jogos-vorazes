@@ -77,6 +77,7 @@ Fila *enfileira(Fila *posicaoNova, int posicao[2])
     novo->posicaoNoLabirinto[0] = posicao[0];
     novo->posicaoNoLabirinto[1] = posicao[1];
 
+
     // percore a fila e coloca o nó na ultima posição
     Fila *aux = posicaoNova;
     if (posicaoNova == NULL)
@@ -103,6 +104,36 @@ Fila *acharPosicaoAtual(int tipoEntidade, int altura, int largura, int **labirin
 {
     // o tipo de entidade pode ser tributo ou bestante
     int posicaoNoLabirinto[2];
+
+
+
+    // percore a fila e coloca o nó na ultima posição
+    Fila *aux = posicaoNova;
+    if (posicaoNova == NULL)
+        return novo;
+    while (aux->prox != NULL)
+        aux = aux->prox;
+    aux->prox = novo;
+    return posicaoNova;
+}
+
+// função para remover o nó da fila quando a posição não é mais
+// necessaria para ser explorada
+Fila *removeFila(Fila *F)
+{
+    Fila *aux = F;
+    F = aux->prox;
+    free(aux);
+    return F;
+}
+
+// usa a fila para armazenar posições iniciais no labirinto que precisam ser
+// verificadas para possíveis movimentos ou para a identificação de pontos de interesse.
+Fila *acharPosicaoAtual(int tipoEntidade, int altura, int largura, int **labirinto)
+{
+    // o tipo de entidade pode ser tributo ou bestante
+    int posicaoNoLabirinto[2];
+
 
     // Ponteiro para a fila que armazenará as posições encontradas
     Fila *posicaoNova = NULL;
@@ -226,6 +257,7 @@ int encontrarSaida(int **labirinto, int altura, int largura, int x, int y, NoPil
 
     moverBestantes(labirinto, altura, largura, bestantes, novaFila);
 
+
     int dx[] = {1, 0, -1, 0}; // ordem de verificação das direções, começa de baixo e faz
     int dy[] = {0, 1, 0, -1};
     char direcoes[] = {'D', 'R', 'U', 'L'};
@@ -249,9 +281,39 @@ int encontrarSaida(int **labirinto, int altura, int largura, int x, int y, NoPil
         }
     }
 
+
+
+    int dx[] = {1, 0, -1, 0}; // ordem de verificação das direções, começa de baixo e faz
+    int dy[] = {0, 1, 0, -1};
+    char direcoes[] = {'D', 'R', 'U', 'L'};
+
+    // loop para tentar nas 4 direções
+    for (int i = 0; i < 4; i++)
+    {
+        int novoX = x + dx[i];
+        int novoY = y + dy[i];
+
+        if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura && labirinto[novoX][novoY] == 0)
+        {
+            // chama a função recursiva novamente para tentar novas posições
+            if (encontrarSaida(labirinto, altura, largura, novoX, novoY, caminho, *novaFila, novaFila))
+            {
+                empilha(caminho, (int[]){novoX, novoY}, direcoes[i]);
+                caminho->tamanho++; // acrescenta 1 na pilha do caminho
+                // retorna 1 e indica que a saída foi encontrada a partir da posição atual
+                return 1;
+            }
+        }
+    }
+
+
     // se nenhuma direção for válida, desempilha e retrocede a posição
     if (caminho->tamanho > 0)
         desempilha(caminho);
     //  retorna 0 e indica que a saída não foi encontrada a partir da posição atual
     return 0;
+
 }
+
+}
+
