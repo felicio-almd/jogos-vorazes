@@ -1,33 +1,32 @@
 #include "maze.h"
 
-NoPilha *criaNo()
+// guardar a ultima posicao caminhada
+void empilha(NoPilha *caminho, int posicaoNoMapa[2], char comando)
 {
-    NoPilha *novo;
-    novo = (NoPilha *)calloc(1, sizeof(NoPilha));
+    NoPilha *novo = (NoPilha *)calloc(1, sizeof(NoPilha));
+    NoPilha *aux = caminho;
+
     if (novo == NULL)
     {
-        printf("ERRO: problemas com a alocacao de memoria . \n");
+        printf("Erro de alocacao de memoria.\n");
         exit(1);
     }
-    return novo;
-}
 
-void empilha(NoPilha *caminho, int posicao[2], char comando)
-{
-    NoPilha *novo = criaNo();
+    // definir a direção e coordenadas do novo nó
     novo->direcao = comando;
-    novo->coordenadasCaminho[0] = posicao[0]; // trocar esse v que porra é essa
-    novo->coordenadasCaminho[1] = posicao[1];
-    NoPilha *aux = caminho;
+    novo->coordenadasCaminho[0] = posicaoNoMapa[0];
+    novo->coordenadasCaminho[1] = posicaoNoMapa[1];
+
     while (aux->prox != NULL)
     {
         aux = aux->prox;
     }
+
     aux->prox = novo;
     novo->ant = aux;
-    caminho->tamanho++;
 }
 
+// retirar a ultima posicao caminhada
 void desempilha(NoPilha *caminho)
 {
     NoPilha *aux = caminho;
@@ -40,230 +39,219 @@ void desempilha(NoPilha *caminho)
     free(aux);
 }
 
+// funcao para imprimir o caminho feito pelo tributo
+// Ao empilhar direções em uma pilha durante um labirinto, a última direção empilhada é a mais recente na sequência de movimentos.
+// Para imprimir o caminho completo da navegação em ordem correta (da primeira direção tomada até a última),
+// é necessário percorrer a pilha do topo (último elemento empilhado) até o fundo (primeiro elemento empilhado).
+// por isso a pilha percorre até o ultimo nó e imprime o contrário
 void imprimeCaminho(NoPilha *caminho)
 {
     NoPilha *aux = caminho->prox;
     if (aux == NULL)
         return;
-    while (aux != NULL)
+    while (aux->prox != NULL)
+    {
+        aux = aux->prox;
+    }
+    printf("%d\n", caminho->tamanho);
+    while (aux != caminho)
     {
         printf("%c", aux->direcao);
-        aux = aux->prox;
+        aux = aux->ant;
     }
     printf("\n");
 }
 
-Fila *criarFilaVazia()
+// função para adicionar nós com as posições na fila
+// a fila é usada para gerir as posições durante a busca
+Fila *enfileira(Fila *posicaoNova, int posicao[2])
 {
     Fila *novo = (Fila *)calloc(1, sizeof(Fila));
     if (novo == NULL)
     {
-        printf("Erro de alocacao\n");
+        printf("Erro de alocacao de memoria\n");
         exit(1);
     }
-    return novo;
-}
 
-Fila *enfileirar(Fila *fila, int posicao[2])
-{
-    Fila *novo = criarFilaVazia();
+    // guarda a nova posição fornecida no novo nó da fila
     novo->posicaoNoLabirinto[0] = posicao[0];
     novo->posicaoNoLabirinto[1] = posicao[1];
-    Fila *aux = fila;
-    if (fila == NULL)
+
+    // percore a fila e coloca o nó na ultima posição
+    Fila *aux = posicaoNova;
+    if (posicaoNova == NULL)
         return novo;
     while (aux->prox != NULL)
         aux = aux->prox;
     aux->prox = novo;
-    return fila;
+    return posicaoNova;
 }
 
-Fila *removeFila(Fila *fila)
+// função para remover o nó da fila quando a posição não é mais
+// necessaria para ser explorada
+Fila *removeFila(Fila *F)
 {
-    Fila *aux = fila;
-    fila = aux->prox;
+    Fila *aux = F;
+    F = aux->prox;
     free(aux);
-    return fila;
+    return F;
 }
 
-Fila *acharPosicao(int altura, int largura, int **labirinto, int M_A) // dnv esse M_A sla
+// usa a fila para armazenar posições iniciais no labirinto que precisam ser
+// verificadas para possíveis movimentos ou para a identificação de pontos de interesse.
+Fila *acharPosicaoAtual(int tipoEntidade, int altura, int largura, int **labirinto)
 {
-    int posicao[2];
-    Fila *posicaoAtual = NULL;
-    if (M_A == 1)
+    // o tipo de entidade pode ser tributo ou bestante
+    int posicaoNoLabirinto[2];
+
+    // Ponteiro para a fila que armazenará as posições encontradas
+    Fila *posicaoNova = NULL;
+
+    if (tipoEntidade == 1)
     {
         for (int i = 0; i < altura; i++)
         {
             for (int j = 0; j < largura; j++)
             {
-                if (labirinto[i][j] == M_A)
+                if (labirinto[i][j] == tipoEntidade)
                 {
-                    posicao[0] = i;
-                    posicao[1] = j;
-                    posicaoAtual = enfileirar(posicaoAtual, posicao);
+                    posicaoNoLabirinto[0] = i;
+                    posicaoNoLabirinto[1] = j;
+                    // coloca a posição à fila de posições encontradas
+                    posicaoNova = enfileira(posicaoNova, posicaoNoLabirinto);
                 }
             }
         }
-        return posicaoAtual;
+        return posicaoNova;
     }
     else
+    // para os bestantes
     {
         for (int i = 0; i < altura; i++)
         {
             for (int j = 0; j < largura; j++)
             {
-                if (labirinto[i][j] == M_A)
+                if (labirinto[i][j] == tipoEntidade)
                 {
+                    // verifica se ele nao esta na borda
                     if (i != 0 && i != altura - 1 && j != 0 && j != largura - 1)
                     {
+                        // aqui verifica se o bestante ele pode se movimentar
+                        // o 0 equivale como o chão
                         if (labirinto[i + 1][j] == 0 || labirinto[i - 1][j] == 0 || labirinto[i][j + 1] == 0 || labirinto[i][j - 1] == 0)
                         {
-                            posicao[0] = i;
-                            posicao[1] = j;
-                            posicaoAtual = enfileirar(posicaoAtual, posicao);
+                            posicaoNoLabirinto[0] = i;
+                            posicaoNoLabirinto[1] = j;
+                            posicaoNova = enfileira(posicaoNova, posicaoNoLabirinto);
                         }
                     }
                     else
                     {
-                        posicao[0] = i;
-                        posicao[1] = j;
-                        posicaoAtual = enfileirar(posicaoAtual, posicao);
+                        posicaoNoLabirinto[0] = i;
+                        posicaoNoLabirinto[1] = j;
+                        posicaoNova = enfileira(posicaoNova, posicaoNoLabirinto);
                     }
                 }
             }
         }
-        return posicaoAtual;
+        // Retorna a fila com todas as posições encontradas
+        return posicaoNova;
     }
 }
 
-int distanciaEntreOsPersonagens(int x1, int y1, int x2, int y2)
+// Função para mover bestantes (ou seja, posições a serem exploradas) em todas as direções possíveis
+int moverBestantes(int **labirinto, int altura, int largura, Fila *bestantes, Fila **novaFila)
 {
-    return abs(x1 - x2) + abs(y1 - y2);
+    if (bestantes == NULL)
+    {
+        return 0;
+    }
+
+    Fila *aux = NULL;
+
+    // enquanto houver posições na fila de bestantes
+    while (bestantes != NULL)
+    {
+        int x = bestantes->posicaoNoLabirinto[0];
+        int y = bestantes->posicaoNoLabirinto[1];
+
+        // movimento para cima
+        if (x > 0 && labirinto[x - 1][y] == 0)
+        {
+            labirinto[x - 1][y] = 3;                 // marca a célula acima como visitada (3)
+            aux = enfileira(aux, (int[]){x - 1, y}); // adiciona a nova posição (x - 1, y) à fila auxiliar
+        }
+
+        // movimento para direita
+        if (y < largura - 1 && labirinto[x][y + 1] == 0)
+        {
+            labirinto[x][y + 1] = 3;
+            aux = enfileira(aux, (int[]){x, y + 1});
+        }
+
+        // movimento para baixo
+        if (x < altura - 1 && labirinto[x + 1][y] == 0)
+        {
+            labirinto[x + 1][y] = 3;
+            aux = enfileira(aux, (int[]){x + 1, y});
+        }
+
+        // movimento para esquerda
+        if (y > 0 && labirinto[x][y - 1] == 0)
+        {
+            labirinto[x][y - 1] = 3;
+            aux = enfileira(aux, (int[]){x, y - 1});
+        }
+
+        // tira o bestante atual da fila após processá-lo
+        bestantes = removeFila(bestantes);
+    }
+
+    *novaFila = aux;
+    // retorna que o movimento foi feito
+    return 1;
 }
 
-bool moveBestante(int altura, int largura, int **labirinto, int *bestante, int *tributo)
+int encontrarSaida(int **labirinto, int altura, int largura, int x, int y, NoPilha *caminho, Fila *bestantes, Fila **novaFila)
 {
-    int melhorX = bestante[0], melhorY = bestante[1];
-    int menorDistancia = distanciaEntreOsPersonagens(bestante[0], bestante[1], tributo[0], tributo[1]);
-    int novoX, novoY, novaDistancia;
+    // se a posição atual é uma borda do labirinto
+    if (x == 0 || y == 0 || x == altura - 1 || y == largura - 1)
+    {
+        empilha(caminho, (int[]){x, y}, '\0'); // marca a saida o "\0" significa caractere NULO
+        return 1;
+    }
 
-    int dx[] = {-1, 0, 1, 0};
+    labirinto[x][y] = 1;                   // marca a posição atual como visitada (1)
+    empilha(caminho, (int[]){x, y}, '\0'); // guarda a posição que ja foi visitada na pilha que tem o caminho
+
+    moverBestantes(labirinto, altura, largura, bestantes, novaFila);
+
+    int dx[] = {1, 0, -1, 0}; // ordem de verificação das direções, começa de baixo e faz
     int dy[] = {0, 1, 0, -1};
+    char direcoes[] = {'D', 'R', 'U', 'L'};
 
+    // loop para tentar nas 4 direções
     for (int i = 0; i < 4; i++)
     {
-        novoX = bestante[0] + dx[i];
-        novoY = bestante[1] + dy[i];
+        int novoX = x + dx[i];
+        int novoY = y + dy[i];
 
-        if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura &&
-            labirinto[novoX][novoY] != 3 && labirinto[novoX][novoY] != 5)
-        { // Não é parede e não foi visitado
-            novaDistancia = distanciaEntreOsPersonagens(novoX, novoY, tributo[0], tributo[1]);
-            if (novaDistancia < menorDistancia)
+        if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura && labirinto[novoX][novoY] == 0)
+        {
+            // chama a função recursiva novamente para tentar novas posições
+            if (encontrarSaida(labirinto, altura, largura, novoX, novoY, caminho, *novaFila, novaFila))
             {
-                menorDistancia = novaDistancia;
-                melhorX = novoX;
-                melhorY = novoY;
+                empilha(caminho, (int[]){novoX, novoY}, direcoes[i]);
+                caminho->tamanho++; // acrescenta 1 na pilha do caminho
+                // retorna 1 e indica que a saída foi encontrada a partir da posição atual
+                return 1;
             }
         }
     }
 
-    if (melhorX == tributo[0] && melhorY == tributo[1])
-    {
-        return true; // Bestante alcançou o tributo
-    }
-
-    labirinto[bestante[0]][bestante[1]] = 0; // Libera a posição atual
-    bestante[0] = melhorX;
-    bestante[1] = melhorY;
-    labirinto[melhorX][melhorY] = 2; // Marca a nova posição do bestante
-    return false;
-}
-
-bool moveTributo(int altura, int largura, int **labirinto, int *tributo, NoPilha *caminho)
-{
-    int dx[] = {-1, 0, 1, 0};
-    int dy[] = {0, 1, 0, -1};
-    char direcoes[] = {'U', 'R', 'D', 'L'};
-    int melhorDirecao = -1;
-
-    // Vamos priorizar movimentos para baixo ('D') primeiro, depois explorar outras direções
-    int ordemDirecoes[] = {2, 1, 0, 3}; // Prioridades: Down (2), Right (1), Up (0), Left (3)
-
-    for (int i = 0; i < 4; i++)
-    {
-        int novaDirecao = ordemDirecoes[i]; // Testa a direção com base na ordem de prioridade
-        int novoX = tributo[0] + dx[novaDirecao];
-        int novoY = tributo[1] + dy[novaDirecao];
-
-        if (novoX >= 0 && novoX < altura && novoY >= 0 && novoY < largura &&
-            labirinto[novoX][novoY] == 0) // Mover apenas para posições livres
-        {
-            melhorDirecao = novaDirecao;
-            break; // Encontra a primeira direção válida e sai do loop
-        }
-    }
-
-    // Se encontrou uma direção válida, mova-se
-    if (melhorDirecao != -1)
-    {
-        int novoX = tributo[0] + dx[melhorDirecao];
-        int novoY = tributo[1] + dy[melhorDirecao];
-
-        labirinto[tributo[0]][tributo[1]] = 5; // Marca a posição atual como visitada
-        tributo[0] = novoX;
-        tributo[1] = novoY;
-        labirinto[novoX][novoY] = 1; // Marca a nova posição do tributo
-        empilha(caminho, tributo, direcoes[melhorDirecao]);
-        return true;
-    }
-
-    return false; // Tributo não conseguiu se mover
-}
-
-void escaparLabirinto(int altura, int largura, int **labirinto, Fila *posicaoTributo, Fila *posicaoMonstros)
-{
-    int tributo[2] = {posicaoTributo->posicaoNoLabirinto[0], posicaoTributo->posicaoNoLabirinto[1]};
-    NoPilha *caminho = criaNo();
-
-    while (true)
-    {
-        bool tributoMoveu = moveTributo(altura, largura, labirinto, tributo, caminho);
-        // Verifica se o tributo chegou à borda
-        if (tributo[0] == 0 || tributo[1] == largura - 1 || tributo[0] == altura - 1 || tributo[1] == 0)
-        {
-            printf("YES\n");
-            printf("%d\n", caminho->tamanho);
-            imprimeCaminho(caminho);
-            return;
-        }
-
-        // Se o tributo não conseguiu se mover e nenhum bestante o alcançou, não há solução
-        if (!tributoMoveu)
-        {
-            printf("NO\n");
-            return;
-        }
-
-        bool bestanteAlcancou = false;
-
-        // Move todos os bestantes
-        Fila *monstroAtual = posicaoMonstros;
-        while (monstroAtual != NULL)
-        {
-            if (moveBestante(altura, largura, labirinto, monstroAtual->posicaoNoLabirinto, tributo))
-            {
-                bestanteAlcancou = true;
-                break;
-            }
-            monstroAtual = monstroAtual->prox;
-        }
-
-        // Verifica se algum bestante alcançou o tributo
-        if (bestanteAlcancou)
-        {
-            printf("You Died\n");
-            return;
-        }
-    }
+    // se nenhuma direção for válida, desempilha e retrocede a posição
+    if (caminho->tamanho > 0)
+        desempilha(caminho);
+    //  retorna 0 e indica que a saída não foi encontrada a partir da posição atual
+    return 0;
 }
